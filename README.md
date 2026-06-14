@@ -15,7 +15,7 @@ A 100% free, single-file storyboard web app — created for the love of stories 
 - Multiple background themes (dark, white, grey, dark grey)
 - Toggle file names and duplicate-image highlighting
 - Undo (Cmd/Ctrl+Z)
-- Export to images, PDF, or FCPXML (DaVinci Resolve / Final Cut Pro)
+- Export to images, PDF, or FCPXML (DaVinci Resolve / Final Cut Pro / ...)
 - Save/open projects as JSON
 - Runs entirely in your browser — no account, no upload, no tracking
 
