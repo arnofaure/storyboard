@@ -1,6 +1,6 @@
 # Storyboard
 
-![Storyboard screenshot](screenshot.jpg)
+
 
 A 100% free, single-file storyboard web app — created for the love of stories by [Arno Faure](https://arnofaure.com).
 
