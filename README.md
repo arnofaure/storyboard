@@ -1,6 +1,6 @@
 # Storyboard
 
-A 100% free, single-file storyboard web app — created for the love of story by [Arno Faure](https://arnofaure.com).
+A 100% free, single-file storyboard web app — created for the love of stories by [Arno Faure](https://arnofaure.com).
 
 🔗 **[storyboard.arnofaure.com](https://storyboard.arnofaure.com)**
 
