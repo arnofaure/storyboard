@@ -1,0 +1,1443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Storyboard &mdash; 100% Free Storyboard Web App</title>
+<meta name="description" content="A 100% free storyboard web app, created for the love of story by Arno Faure.">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Storyboard &mdash; 100% Free Storyboard Web App">
+<meta property="og:description" content="A 100% free storyboard web app, created for the love of story by Arno Faure.">
+<meta property="og:image" content="storyboard-opengraph.png">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Storyboard &mdash; 100% Free Storyboard Web App">
+<meta name="twitter:description" content="A 100% free storyboard web app, created for the love of story by Arno Faure.">
+<meta name="twitter:image" content="storyboard-opengraph.png">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d0d0d;
+    --surface: #161616;
+    --surface2: #1f1f1f;
+    --border: rgba(255,255,255,0.08);
+    --border-hover: rgba(255,255,255,0.18);
+    --border-sel: rgba(255,255,255,0.55);
+    --text: #e8e8e8;
+    --text-muted: #666;
+    --text-dim: #444;
+    --accent: #e8e8e8;
+    --radius: 6px;
+    --radius-lg: 10px;
+  }
+
+  body.theme-white {
+    --bg: #ffffff;
+    --surface: #f6f6f6;
+    --surface2: #ececec;
+    --border: rgba(0,0,0,0.08);
+    --border-hover: rgba(0,0,0,0.18);
+    --border-sel: rgba(0,0,0,0.45);
+    --text: #1a1a1a;
+    --text-muted: #8a8a8a;
+    --text-dim: #bbbbbb;
+  }
+  body.theme-grey {
+    --bg: #9b9b9b;
+    --surface: #a8a8a8;
+    --surface2: #b5b5b5;
+    --border: rgba(0,0,0,0.1);
+    --border-hover: rgba(0,0,0,0.22);
+    --border-sel: rgba(0,0,0,0.5);
+    --text: #1a1a1a;
+    --text-muted: #555555;
+    --text-dim: #787878;
+  }
+  body.theme-darkgrey {
+    --bg: #2b2b2b;
+    --surface: #333333;
+    --surface2: #3d3d3d;
+    --border: rgba(255,255,255,0.08);
+    --border-hover: rgba(255,255,255,0.18);
+    --border-sel: rgba(255,255,255,0.5);
+    --text: #e8e8e8;
+    --text-muted: #999999;
+    --text-dim: #666666;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 13px;
+    min-height: 100vh;
+  }
+
+  /* TOOLBAR — fixed dark chrome, independent of the canvas background theme */
+  #toolbar {
+    --tb-surface2: #1f1f1f;
+    --tb-border: rgba(255,255,255,0.08);
+    --tb-border-hover: rgba(255,255,255,0.18);
+    --tb-text: #e8e8e8;
+    --tb-text-muted: #e8e8e8;
+    --tb-text-dim: #e8e8e8;
+
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(13,13,13,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 0.5px solid var(--tb-border);
+    padding: 10px 20px;
+    min-height: 52px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    row-gap: 10px;
+  }
+
+  .tb-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    row-gap: 10px;
+  }
+
+  .tb-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--tb-text);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-right: 4px;
+  }
+
+  .tb-menu { position: relative; }
+  .tb-menu-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 6px;
+    border-radius: var(--radius);
+    transition: background 0.15s;
+  }
+  .tb-menu-btn:hover { background: var(--tb-surface2); }
+  .tb-menu-btn svg { transition: transform 0.15s; flex-shrink: 0; }
+  .tb-menu-btn.open svg { transform: rotate(180deg); }
+
+  .tb-dropdown {
+    display: none;
+    flex-direction: column;
+    gap: 2px;
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    min-width: 190px;
+    background: #1a1a1a;
+    border: 0.5px solid var(--tb-border-hover);
+    border-radius: var(--radius);
+    padding: 6px;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.45);
+    z-index: 200;
+  }
+  .tb-dropdown.open { display: flex; }
+  .tb-dropdown .tb-btn {
+    width: 100%;
+    border-color: transparent;
+    justify-content: flex-start;
+  }
+  .tb-dropdown .tb-btn:hover { background: var(--tb-surface2); }
+  .tb-dropdown .tb-btn.active { border-color: var(--tb-text); }
+  .tb-sep-h {
+    height: 0.5px;
+    background: var(--tb-border);
+    margin: 4px 2px;
+  }
+
+  .tb-sep {
+    width: 0.5px;
+    height: 20px;
+    background: var(--tb-border);
+    flex-shrink: 0;
+  }
+
+  .tb-btn {
+    background: transparent;
+    border: 0.5px solid var(--tb-border);
+    border-radius: var(--radius);
+    color: var(--tb-text-muted);
+    font-size: 12px;
+    padding: 5px 12px;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .tb-btn:hover { border-color: var(--tb-border-hover); color: var(--tb-text); }
+  .tb-btn.primary {
+    border-color: var(--tb-border-hover);
+    color: var(--tb-text);
+  }
+  .tb-btn.primary:hover { background: var(--tb-surface2); }
+  .tb-btn.danger { color: #e0584a; border-color: rgba(224,88,74,0.35); }
+  .tb-btn.danger:hover { background: rgba(224,88,74,0.1); border-color: rgba(224,88,74,0.6); }
+  .tb-btn.active { background: var(--tb-text); border-color: var(--tb-text); color: #0d0d0d; }
+
+  .tb-select {
+    background: transparent;
+    border: 0.5px solid var(--tb-border);
+    border-radius: var(--radius);
+    color: var(--tb-text-muted);
+    font-size: 12px;
+    padding: 5px 8px;
+    cursor: pointer;
+    outline: none;
+  }
+  .tb-select:hover { border-color: var(--tb-border-hover); color: var(--tb-text); }
+
+  #shot-count {
+    font-size: 12px;
+    color: var(--tb-text-dim);
+    margin-left: auto;
+  }
+
+  .size-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .size-label { font-size: 11px; color: var(--tb-text-dim); }
+  #size-range {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 80px;
+    height: 3px;
+    background: var(--tb-surface2);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+  #size-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--tb-text);
+    cursor: pointer;
+  }
+
+  #sel-bar {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 10px;
+    background: var(--tb-surface2);
+    border-radius: var(--radius);
+    border: 0.5px solid var(--tb-border-hover);
+  }
+  #sel-bar.visible { display: flex; }
+  #sel-bar span { color: var(--tb-text-muted); font-size: 12px; }
+
+  /* MAIN */
+  #main {
+    padding: 20px;
+  }
+
+  /* DROPZONE */
+  #dropzone {
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-lg);
+    padding: 32px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  #dropzone:hover, #dropzone.hover {
+    border-color: var(--border-hover);
+    background: var(--surface);
+  }
+  #dropzone svg { color: var(--text-dim); margin-bottom: 4px; }
+  #dropzone p { font-size: 13px; color: var(--text-muted); }
+  #dropzone small { font-size: 11px; color: var(--text-dim); }
+  #file-input { display: none; }
+
+  /* GRID */
+  #grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .frame-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(var(--card-w, 220px), 1fr));
+    gap: 10px;
+    align-items: start;
+  }
+  .frame-grid:empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 56px;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius);
+  }
+  .frame-grid:empty::before {
+    content: 'Drop shots here';
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  .frame-grid.drag-over { outline: 2px dashed var(--accent); outline-offset: 2px; }
+
+  /* SCENE HEADER */
+  .scene-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+    cursor: grab;
+    user-select: none;
+  }
+  .scene-header.dragging { opacity: 0.28; cursor: grabbing; }
+  .scene-header.drag-over { border-top: 2px dashed var(--accent); }
+  .scene-arrow {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text);
+    padding: 2px;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .scene-arrow svg { transition: transform 0.15s; }
+  .scene-header:not(.collapsed) .scene-arrow svg { transform: rotate(90deg); }
+  .scene-name {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text);
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid transparent;
+    outline: none;
+    flex: 1;
+    min-width: 0;
+    padding: 2px 0;
+  }
+  .scene-name:focus { border-bottom-color: var(--border-hover); }
+  .scene-count {
+    font-size: 11px;
+    color: var(--text);
+    flex-shrink: 0;
+  }
+  .scene-del {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-dim);
+    padding: 2px;
+    border-radius: 3px;
+    opacity: 0;
+    transition: opacity 0.1s, color 0.1s;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+  }
+  .scene-header:hover .scene-del { opacity: 1; }
+  .scene-del:hover { color: #d71414; }
+
+  /* CARD */
+  .frame-card {
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    overflow: hidden;
+    cursor: grab;
+    position: relative;
+    transition: border-color 0.15s, opacity 0.12s, transform 0.12s;
+    user-select: none;
+  }
+  .frame-card:hover { border-color: var(--border-hover); }
+  .frame-card.selected { border-color: #7F00FF; }
+  .frame-card.dragging { opacity: 0.28; transform: scale(0.96); cursor: grabbing; }
+  .frame-card.drag-over { border-color: var(--accent); border-style: dashed; }
+  .frame-card.duplicate { outline: 2px solid #3b82f6; outline-offset: -2px; }
+  .frame-card.flag-green { outline: 2px solid #22c55e; outline-offset: -2px; }
+  .frame-card.flag-orange { outline: 2px solid #f59e0b; outline-offset: -2px; }
+  .frame-card.flag-red { outline: 2px solid #ef4444; outline-offset: -2px; }
+  .frame-card.flag-red .frame-img { opacity: 0.45; }
+
+  /* IMAGE — natural ratio (or cropped to a chosen ratio) */
+  .frame-img-wrap {
+    width: 100%;
+    overflow: hidden;
+    background: #000;
+  }
+  .frame-img {
+    width: 100%;
+    height: auto;
+    display: block;
+    pointer-events: none;
+  }
+  #grid.ratio-active .frame-img-wrap {
+    aspect-ratio: var(--ratio, 1);
+  }
+  #grid.ratio-active .frame-img {
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* FOOTER */
+  .frame-footer {
+    padding: 7px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-top: 0.5px solid var(--border);
+  }
+  .shot-num {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+  .shot-filename {
+    font-size: 10px;
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+    margin: 0 8px;
+  }
+  .frame-del {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #ffffff;
+    padding: 2px;
+    border-radius: 3px;
+    opacity: 0;
+    transition: opacity 0.1s, color 0.1s;
+    line-height: 1;
+  }
+  .frame-card:hover .frame-del { opacity: 1; }
+  .frame-del:hover { color: #d71414; }
+
+  .frame-flag {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text);
+    padding: 2px;
+    border-radius: 3px;
+    opacity: 0;
+    transition: opacity 0.1s, color 0.1s;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .frame-card:hover .frame-flag,
+  .frame-flag.active { opacity: 1; }
+  .frame-flag.flag-green { color: #22c55e; }
+  .frame-flag.flag-orange { color: #f59e0b; }
+  .frame-flag.flag-red { color: #ef4444; }
+
+  /* CHECKBOX */
+  .frame-check {
+    position: absolute;
+    top: 7px;
+    left: 7px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255,255,255,0.3);
+    background: rgba(13,13,13,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.12s;
+    cursor: pointer;
+    backdrop-filter: blur(4px);
+  }
+  .frame-card:hover .frame-check,
+  .frame-card.selected .frame-check { opacity: 1; }
+  .frame-check.checked {
+    background: #7F00FF;
+    border-color: #7F00FF;
+  }
+  .frame-check.checked svg { display: block; }
+  .frame-check svg { display: none; width: 10px; height: 10px; }
+
+  /* TOAST */
+  #toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(60px);
+    background: var(--surface2);
+    border: 0.5px solid var(--border-hover);
+    border-radius: var(--radius);
+    padding: 8px 16px;
+    font-size: 12px;
+    color: var(--text-muted);
+    transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1), opacity 0.25s;
+    pointer-events: none;
+    opacity: 0;
+    z-index: 999;
+  }
+  #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+  /* EXPORT SPINNER */
+  #spinner {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(13,13,13,0.75);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 12px;
+    color: var(--text-muted);
+    font-size: 12px;
+  }
+  #spinner.show { display: flex; }
+  .spin-ring {
+    width: 28px; height: 28px;
+    border: 2px solid var(--border);
+    border-top-color: var(--text);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* PAGE FOOTER */
+  #page-footer {
+    padding: 16px 20px 24px;
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  #page-footer a {
+    color: var(--text-muted);
+    text-decoration: none;
+  }
+  #page-footer a:hover {
+    color: var(--text);
+    text-decoration: underline;
+  }
+
+  /* PRINT / PDF LAYOUT */
+  @media print {
+    #toolbar, #dropzone, .frame-del, .frame-flag, .frame-check, #toast, #spinner, #page-footer, .scene-del { display: none !important; }
+    body { background: #fff; color: #000; }
+    #main { padding: 12mm; }
+    .frame-grid:empty { display: none; }
+    .frame-grid { grid-template-columns: repeat(3, 1fr); gap: 6mm; }
+    .frame-card { border: 0.5px solid #ddd; background: #fff; break-inside: avoid; }
+    .frame-footer { border-top-color: #ddd; }
+    .shot-num { color: #888; }
+  }
+</style>
+</head>
+<body>
+
+<div id="toolbar">
+  <div class="tb-menu">
+    <button class="tb-title tb-menu-btn" id="main-menu-btn" onclick="toggleMenu()">
+      Storyboard
+      <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+    <div class="tb-dropdown" id="main-menu">
+      <button class="tb-btn" onclick="document.getElementById('project-input').click(); closeMenu()" title="Open a saved project">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg>
+        Open
+      </button>
+      <input type="file" id="project-input" accept="application/json" style="display:none" onchange="openStoryboard(this.files[0]); this.value=''">
+      <button class="tb-btn" onclick="saveStoryboard(); closeMenu()" title="Save project for later">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
+        Save
+      </button>
+      <button class="tb-btn" id="filename-toggle" onclick="toggleFilenames(); closeMenu()" title="Show/hide file name on each frame">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+        Show File Name
+      </button>
+      <button class="tb-btn" id="dup-toggle" onclick="toggleDuplicates(); closeMenu()" title="Highlight shots that use the same image more than once">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        Show Duplicates
+      </button>
+      <div class="tb-sep-h"></div>
+      <button class="tb-btn" onclick="exportImages(); closeMenu()" title="Export each frame as PNG">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M4 16l4-4 4 4m4-4l4 4M4 20h16M12 3v13"/></svg>
+        Images
+      </button>
+      <button class="tb-btn" onclick="exportPDF(); closeMenu()" title="Export as PDF">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 7h4m-4 4h6m-6 4h4"/></svg>
+        PDF
+      </button>
+      <button class="tb-btn" onclick="exportXML(); closeMenu()" title="Export FCPXML for DaVinci Resolve / Final Cut Pro">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M16 18l4-6-4-6M8 6l-4 6 4 6"/></svg>
+        XML
+      </button>
+      <div class="tb-sep-h"></div>
+      <button class="tb-btn" onclick="undo(); closeMenu()" title="Undo last change (Ctrl/Cmd+Z)">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M3 7v6h6"/><path d="M3 13a9 9 0 1 0 3-7l-3 3"/></svg>
+        Undo
+      </button>
+    </div>
+  </div>
+  <div class="tb-sep"></div>
+  <button class="tb-btn primary" onclick="document.getElementById('file-input').click()">
+    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7-7 7 7"/></svg>
+    Import
+  </button>
+  <input type="file" id="file-input" accept="image/*" multiple onchange="handleFiles(this.files)">
+
+  <div id="sel-bar">
+    <span id="sel-count">0 selected</span>
+    <button class="tb-btn danger" onclick="deleteSelected()">Delete</button>
+    <button class="tb-btn" onclick="clearSelection()">Deselect</button>
+  </div>
+
+  <div class="tb-right">
+    <span id="shot-count"></span>
+    <div class="tb-sep"></div>
+    <button class="tb-btn" onclick="addScene()" title="Add a scene section (groups shots; select shots first to start the scene there)">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/></svg>
+      Scene
+    </button>
+    <div class="tb-sep"></div>
+    <div class="size-wrap">
+      <span class="size-label">Size</span>
+      <input type="range" id="size-range" min="120" max="380" value="220" step="10" oninput="updateSize(this.value)">
+    </div>
+    <div class="tb-sep"></div>
+    <div class="size-wrap">
+      <span class="size-label">Background</span>
+      <select id="theme-select" class="tb-select" onchange="updateTheme(this.value)">
+        <option value="">Dark</option>
+        <option value="theme-white">White</option>
+        <option value="theme-grey">Grey</option>
+        <option value="theme-darkgrey">Dark Grey</option>
+      </select>
+    </div>
+    <div class="tb-sep"></div>
+    <div class="size-wrap">
+      <span class="size-label">Ratio</span>
+      <select id="ratio-select" class="tb-select" onchange="updateRatio(this.value)">
+        <option value="">Original</option>
+        <option value="1.85">1.85:1</option>
+        <option value="1">1:1</option>
+        <option value="0.8">4:5</option>
+        <option value="1.7778">16:9</option>
+        <option value="2.39">2.39:1</option>
+        <option value="1.43">1.43:1</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<div id="main">
+  <div id="dropzone"
+    onclick="document.getElementById('file-input').click()"
+    ondrop="handleDrop(event)"
+    ondragover="handleDzOver(event)"
+    ondragleave="handleDzLeave(event)">
+    <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24">
+      <path d="M4 16l4-4 4 4m0 0l4-4 4 4M4 20h16M12 3v13"/>
+    </svg>
+    <p>Drop images here or click to import</p>
+    <small>PNG, JPG, WEBP — original aspect ratios are preserved</small>
+  </div>
+  <div id="grid"></div>
+</div>
+
+<div id="toast"></div>
+
+<div id="spinner">
+  <div class="spin-ring"></div>
+  <span id="spinner-label">Exporting...</span>
+</div>
+
+<footer id="page-footer">
+  &copy; 2026 Created for the love of story by <a href="https://arnofaure.com" target="_blank" rel="noopener noreferrer">Arno Faure</a> &middot; Licensed under <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener noreferrer">CC BY-NC 4.0</a>
+</footer>
+
+<script>
+let frames = [];
+let dragSrc = null;
+let selectedIds = new Set();
+let lastSelectedIndex = null;
+let showFileNames = false;
+let highlightDuplicates = false;
+let unsaved = false;
+let undoStack = [];
+const UNDO_LIMIT = 50;
+
+function markUnsaved() { unsaved = true; }
+
+function pushUndo() {
+  undoStack.push(JSON.stringify(frames));
+  if (undoStack.length > UNDO_LIMIT) undoStack.shift();
+}
+
+function undo() {
+  if (!undoStack.length) { toast('Nothing to undo.'); return; }
+  frames = JSON.parse(undoStack.pop());
+  selectedIds.clear();
+  lastSelectedIndex = null;
+  markUnsaved();
+  render();
+  toast('Undo.');
+}
+
+function uid() { return Math.random().toString(36).slice(2,9); }
+
+// Shot labels: same filename reused later gets the original number + a letter suffix (01, 02, 01b, 01c...)
+// Returns a Map of frame id -> label. Scene markers are skipped (they don't get a label).
+function computeShotLabels() {
+  const seen = new Map();
+  const labels = new Map();
+  let count = 0;
+  frames.filter(fr => !fr.isScene).forEach(fr => {
+    const entry = seen.get(fr.name);
+    if (!entry) {
+      count++;
+      seen.set(fr.name, { num: count, repeats: 0 });
+      labels.set(fr.id, String(count).padStart(2, '0'));
+    } else {
+      entry.repeats++;
+      labels.set(fr.id, String(entry.num).padStart(2, '0') + String.fromCharCode(97 + entry.repeats));
+    }
+  });
+  return labels;
+}
+
+// Map of frame id -> name of the scene it belongs to (or null if none)
+function computeSceneNames() {
+  const map = new Map();
+  let current = null;
+  frames.forEach(fr => {
+    if (fr.isScene) { current = fr.name; return; }
+    map.set(fr.id, current);
+  });
+  return map;
+}
+
+function sanitizeFilename(s) {
+  return s.replace(/[^a-z0-9]+/gi, '_').replace(/^_+|_+$/g, '');
+}
+
+function updateSize(v) {
+  document.getElementById('grid').style.setProperty('--card-w', v + 'px');
+}
+document.getElementById('grid').style.setProperty('--card-w', '220px');
+
+// --- DROP ZONE ---
+function handleDzOver(e) { e.preventDefault(); e.currentTarget.classList.add('hover'); }
+function handleDzLeave(e) { e.currentTarget.classList.remove('hover'); }
+function handleDrop(e) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('hover');
+  if (e.dataTransfer.files.length) handleFiles(e.dataTransfer.files);
+}
+
+function handleFiles(files) {
+  const imgs = [...files].filter(f => f.type.startsWith('image/'));
+  if (!imgs.length) return;
+  pushUndo();
+  if (!frames.length) {
+    frames.push({ id: uid(), isScene: true, name: 'Scene 1', collapsed: false });
+  }
+  let loaded = 0;
+  imgs.forEach(f => {
+    const id = uid();
+    const url = URL.createObjectURL(f);
+    frames.push({ id, url, name: f.name });
+    loaded++;
+    if (loaded === imgs.length) { markUnsaved(); render(); }
+  });
+}
+
+// --- RENDER ---
+function render() {
+  const grid = document.getElementById('grid');
+  const sc = document.getElementById('shot-count');
+  const imageFrames = frames.filter(f => !f.isScene);
+  sc.textContent = imageFrames.length ? imageFrames.length + ' shot' + (imageFrames.length > 1 ? 's' : '') : '';
+  grid.innerHTML = '';
+
+  const labels = computeShotLabels();
+  const nameCounts = {};
+  imageFrames.forEach(fr => { nameCounts[fr.name] = (nameCounts[fr.name] || 0) + 1; });
+
+  // Count how many shots fall under each scene
+  const sceneCounts = new Map();
+  {
+    let active = null;
+    frames.forEach(fr => {
+      if (fr.isScene) { active = fr.id; sceneCounts.set(active, 0); }
+      else if (active !== null) { sceneCounts.set(active, sceneCounts.get(active) + 1); }
+    });
+  }
+
+  let currentGrid = null;
+  let currentCollapsed = false;
+
+  function ensureGrid(sceneId) {
+    if (!currentGrid) {
+      currentGrid = document.createElement('div');
+      currentGrid.className = 'frame-grid';
+      if (sceneId !== undefined) {
+        currentGrid.dataset.id = sceneId;
+        currentGrid.addEventListener('dragover', onDragOver);
+        currentGrid.addEventListener('dragleave', onDragLeave);
+        currentGrid.addEventListener('drop', onDropCard);
+      }
+      grid.appendChild(currentGrid);
+    }
+    return currentGrid;
+  }
+
+  frames.forEach((fr, i) => {
+    if (fr.isScene) {
+      const header = document.createElement('div');
+      header.className = 'scene-header' + (fr.collapsed ? ' collapsed' : '');
+      header.dataset.id = fr.id;
+      header.draggable = true;
+
+      const arrow = document.createElement('button');
+      arrow.className = 'scene-arrow';
+      arrow.title = 'Collapse/expand scene';
+      arrow.innerHTML = `<svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>`;
+      arrow.onclick = e => { e.stopPropagation(); toggleScene(fr.id); };
+
+      const name = document.createElement('input');
+      name.className = 'scene-name';
+      name.value = fr.name;
+      name.onclick = e => e.stopPropagation();
+      name.onchange = () => { pushUndo(); fr.name = name.value.trim() || 'Scene'; markUnsaved(); };
+
+      const count = document.createElement('span');
+      count.className = 'scene-count';
+      const n = sceneCounts.get(fr.id) || 0;
+      count.textContent = n + ' shot' + (n !== 1 ? 's' : '');
+
+      const del = document.createElement('button');
+      del.className = 'scene-del';
+      del.title = 'Remove scene';
+      del.innerHTML = `<svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>`;
+      del.onclick = e => { e.stopPropagation(); deleteScene(fr.id); };
+
+      header.appendChild(arrow);
+      header.appendChild(name);
+      header.appendChild(count);
+      header.appendChild(del);
+
+      header.addEventListener('dragstart', onDragStart);
+      header.addEventListener('dragover', onDragOver);
+      header.addEventListener('dragleave', onDragLeave);
+      header.addEventListener('drop', onDropCard);
+      header.addEventListener('dragend', onDragEnd);
+
+      grid.appendChild(header);
+
+      currentGrid = null;
+      currentCollapsed = fr.collapsed;
+      if (!currentCollapsed) ensureGrid(fr.id);
+      return;
+    }
+
+    if (currentCollapsed) return;
+
+    const card = document.createElement('div');
+    card.className = 'frame-card'
+      + (selectedIds.has(fr.id) ? ' selected' : '')
+      + (highlightDuplicates && nameCounts[fr.name] > 1 ? ' duplicate' : '')
+      + (fr.flag ? ' flag-' + fr.flag : '');
+    card.dataset.id = fr.id;
+    card.draggable = true;
+
+    // Checkbox
+    const check = document.createElement('div');
+    check.className = 'frame-check' + (selectedIds.has(fr.id) ? ' checked' : '');
+    check.innerHTML = `<svg viewBox="0 0 10 10" fill="none" stroke="#0d0d0d" stroke-width="2"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg>`;
+    check.onclick = e => { e.stopPropagation(); toggleSelect(fr.id, i, e.shiftKey); };
+
+    // Image — natural ratio, or cropped to the chosen ratio
+    const imgWrap = document.createElement('div');
+    imgWrap.className = 'frame-img-wrap';
+    const img = document.createElement('img');
+    img.className = 'frame-img';
+    img.src = fr.url;
+    img.alt = 'Shot ' + labels.get(fr.id);
+    img.loading = 'lazy';
+    imgWrap.appendChild(img);
+
+    // Footer
+    const footer = document.createElement('div');
+    footer.className = 'frame-footer';
+    const num = document.createElement('span');
+    num.className = 'shot-num';
+    num.textContent = labels.get(fr.id);
+    const flag = document.createElement('button');
+    flag.className = 'frame-flag' + (fr.flag ? ' active flag-' + fr.flag : '');
+    flag.title = fr.flag ? 'Flag: ' + fr.flag + ' (click to change)' : 'Flag this shot';
+    flag.innerHTML = `<svg width="12" height="12" fill="${fr.flag ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 22V4a1 1 0 011-1h13.5a.5.5 0 01.4.8L15 9l3.9 5.2a.5.5 0 01-.4.8H6a1 1 0 00-1 1v6"/></svg>`;
+    flag.onclick = e => { e.stopPropagation(); toggleFlag(fr.id); };
+
+    const del = document.createElement('button');
+    del.className = 'frame-del';
+    del.title = 'Delete';
+    del.innerHTML = `<svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>`;
+    del.onclick = e => { e.stopPropagation(); deleteFrame(fr.id); };
+
+    footer.appendChild(num);
+    if (showFileNames) {
+      const fname = document.createElement('span');
+      fname.className = 'shot-filename';
+      fname.textContent = fr.name;
+      fname.title = fr.name;
+      footer.appendChild(fname);
+    }
+    footer.appendChild(flag);
+    footer.appendChild(del);
+    card.appendChild(check);
+    card.appendChild(imgWrap);
+    card.appendChild(footer);
+
+    // Drag events
+    card.addEventListener('dragstart', onDragStart);
+    card.addEventListener('dragover', onDragOver);
+    card.addEventListener('dragleave', onDragLeave);
+    card.addEventListener('drop', onDropCard);
+    card.addEventListener('dragend', onDragEnd);
+
+    ensureGrid().appendChild(card);
+  });
+
+  updateSelBar();
+}
+
+function toggleSelect(id, index, shiftKey) {
+  if (shiftKey && lastSelectedIndex !== null) {
+    const start = Math.min(lastSelectedIndex, index);
+    const end = Math.max(lastSelectedIndex, index);
+    for (let i = start; i <= end; i++) {
+      if (!frames[i].isScene) selectedIds.add(frames[i].id);
+    }
+  } else {
+    selectedIds.has(id) ? selectedIds.delete(id) : selectedIds.add(id);
+  }
+  lastSelectedIndex = index;
+  render();
+}
+function clearSelection() { selectedIds.clear(); lastSelectedIndex = null; render(); }
+function deleteSelected() {
+  pushUndo();
+  frames = frames.filter(f => !selectedIds.has(f.id));
+  selectedIds.clear();
+  markUnsaved();
+  render();
+}
+function deleteFrame(id) {
+  pushUndo();
+  selectedIds.delete(id);
+  frames = frames.filter(f => f.id !== id);
+  markUnsaved();
+  render();
+}
+const FLAG_CYCLE = [null, 'green', 'orange', 'red'];
+function toggleFlag(id) {
+  pushUndo();
+  const fr = frames.find(f => f.id === id);
+  if (fr) {
+    const idx = FLAG_CYCLE.indexOf(fr.flag || null);
+    fr.flag = FLAG_CYCLE[(idx + 1) % FLAG_CYCLE.length];
+  }
+  markUnsaved();
+  render();
+}
+// --- SCENES ---
+function addScene() {
+  pushUndo();
+  const sceneCount = frames.filter(f => f.isScene).length;
+  const marker = { id: uid(), isScene: true, name: 'Scene ' + (sceneCount + 1), collapsed: false };
+  let insertAt = frames.length;
+  if (selectedIds.size) {
+    const idx = frames.findIndex(f => !f.isScene && selectedIds.has(f.id));
+    if (idx >= 0) insertAt = idx;
+  }
+  frames.splice(insertAt, 0, marker);
+  markUnsaved();
+  render();
+}
+function toggleScene(id) {
+  const fr = frames.find(f => f.id === id);
+  if (fr) fr.collapsed = !fr.collapsed;
+  render();
+}
+function deleteScene(id) {
+  pushUndo();
+  frames = frames.filter(f => f.id !== id);
+  markUnsaved();
+  render();
+}
+
+function updateSelBar() {
+  const bar = document.getElementById('sel-bar');
+  const sc = document.getElementById('sel-count');
+  if (selectedIds.size > 0) {
+    bar.classList.add('visible');
+    sc.textContent = selectedIds.size + ' selected';
+  } else {
+    bar.classList.remove('visible');
+  }
+}
+
+// --- DRAG & DROP REORDER ---
+// A scene marker drags as a block together with all the shots that belong to it.
+function getMovingIds(srcId) {
+  const idx = frames.findIndex(f => f.id === srcId);
+  if (idx < 0) return new Set([srcId]);
+  if (frames[idx].isScene) {
+    const ids = new Set([srcId]);
+    for (let i = idx + 1; i < frames.length; i++) {
+      if (frames[i].isScene) break;
+      ids.add(frames[i].id);
+    }
+    return ids;
+  }
+  return (selectedIds.has(srcId) && selectedIds.size > 1) ? new Set(selectedIds) : new Set([srcId]);
+}
+function onDragStart(e) {
+  dragSrc = this.dataset.id;
+  const ids = getMovingIds(dragSrc);
+  setTimeout(() => {
+    document.querySelectorAll('.frame-card, .scene-header').forEach(c => {
+      if (ids.has(c.dataset.id)) c.classList.add('dragging');
+    });
+  }, 0);
+}
+function onDragOver(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  if (this.dataset.id !== dragSrc) this.classList.add('drag-over');
+}
+function onDragLeave(e) {
+  e.stopPropagation();
+  this.classList.remove('drag-over');
+}
+function onDropCard(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  this.classList.remove('drag-over');
+  const tid = this.dataset.id;
+  if (!tid || tid === dragSrc) return;
+
+  const movingIds = getMovingIds(dragSrc);
+  if (movingIds.has(tid)) return;
+
+  pushUndo();
+
+  const moving = frames.filter(f => movingIds.has(f.id));
+  const remaining = frames.filter(f => !movingIds.has(f.id));
+  let ti = remaining.findIndex(f => f.id === tid);
+  if (ti < 0) { undoStack.pop(); return; }
+
+  // Dropping a non-scene item onto a scene header moves it inside that scene (as its first shot),
+  // even if the scene is currently empty.
+  const draggingScene = moving[0] && moving[0].isScene;
+  if (remaining[ti].isScene && !draggingScene) ti += 1;
+
+  remaining.splice(ti, 0, ...moving);
+  frames = remaining;
+  markUnsaved();
+  render();
+}
+function onDragEnd() {
+  document.querySelectorAll('.frame-card, .scene-header').forEach(c => c.classList.remove('dragging', 'drag-over'));
+  dragSrc = null;
+}
+
+// --- TOAST ---
+function toast(msg, duration = 2800) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), duration);
+}
+
+// --- MAIN MENU ---
+function toggleMenu() {
+  document.getElementById('main-menu').classList.toggle('open');
+  document.getElementById('main-menu-btn').classList.toggle('open');
+}
+function closeMenu() {
+  document.getElementById('main-menu').classList.remove('open');
+  document.getElementById('main-menu-btn').classList.remove('open');
+}
+document.addEventListener('click', e => {
+  const menu = document.getElementById('main-menu');
+  const btn = document.getElementById('main-menu-btn');
+  if (!menu.contains(e.target) && !btn.contains(e.target)) closeMenu();
+});
+
+// --- THEME & FILENAME TOGGLE ---
+function updateTheme(cls) {
+  document.body.classList.remove('theme-white', 'theme-grey', 'theme-darkgrey');
+  if (cls) document.body.classList.add(cls);
+}
+function toggleFilenames() {
+  showFileNames = !showFileNames;
+  document.getElementById('filename-toggle').classList.toggle('active', showFileNames);
+  render();
+}
+function toggleDuplicates() {
+  highlightDuplicates = !highlightDuplicates;
+  document.getElementById('dup-toggle').classList.toggle('active', highlightDuplicates);
+  render();
+}
+function updateRatio(val) {
+  const grid = document.getElementById('grid');
+  if (val) {
+    grid.style.setProperty('--ratio', val);
+    grid.classList.add('ratio-active');
+  } else {
+    grid.classList.remove('ratio-active');
+  }
+}
+
+// --- PROJECT SAVE / OPEN (file-based) ---
+function fileToDataURL(url) {
+  return fetch(url).then(r => r.blob()).then(blob => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  }));
+}
+
+// Center-crop an image to a target width/height ratio, returns a canvas
+function cropToRatio(img, ratio) {
+  const iw = img.naturalWidth, ih = img.naturalHeight;
+  const ir = iw / ih;
+  let sx, sy, sw, sh;
+  if (ir > ratio) { sh = ih; sw = ih * ratio; sx = (iw - sw) / 2; sy = 0; }
+  else { sw = iw; sh = iw / ratio; sx = 0; sy = (ih - sh) / 2; }
+  const canvas = document.createElement('canvas');
+  canvas.width = sw;
+  canvas.height = sh;
+  canvas.getContext('2d').drawImage(img, sx, sy, sw, sh, 0, 0, sw, sh);
+  return canvas;
+}
+
+function escapeXML(s) {
+  return s.replace(/[<>&'"]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', "'": '&apos;', '"': '&quot;' }[c]));
+}
+
+async function saveStoryboard() {
+  if (!frames.filter(f => !f.isScene).length) { toast('No images to save.'); return; }
+  const spinner = document.getElementById('spinner');
+  const spinnerLabel = document.getElementById('spinner-label');
+  spinner.classList.add('show');
+  try {
+    const data = [];
+    for (let i = 0; i < frames.length; i++) {
+      const fr = frames[i];
+      if (fr.isScene) {
+        data.push({ isScene: true, id: fr.id, name: fr.name, collapsed: fr.collapsed });
+        continue;
+      }
+      spinnerLabel.textContent = `Saving — ${i + 1} / ${frames.length}`;
+      const dataURL = fr.url.startsWith('data:') ? fr.url : await fileToDataURL(fr.url);
+      data.push({ id: fr.id, name: fr.name, dataURL, flag: fr.flag || null });
+    }
+    const theme = ['theme-white', 'theme-grey', 'theme-darkgrey'].find(c => document.body.classList.contains(c)) || '';
+    const project = {
+      version: 1,
+      frames: data,
+      settings: {
+        theme,
+        cardSize: document.getElementById('size-range').value,
+        showFileNames,
+        highlightDuplicates,
+        ratio: document.getElementById('ratio-select').value
+      }
+    };
+    const blob = new Blob([JSON.stringify(project)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'storyboard.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+    unsaved = false;
+    toast('Project saved.');
+  } catch (err) {
+    console.error(err);
+    toast('Error saving project.');
+  } finally {
+    spinner.classList.remove('show');
+  }
+}
+
+function openStoryboard(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const project = JSON.parse(reader.result);
+      frames = (project.frames || []).map(f => f.isScene
+        ? { id: f.id || uid(), isScene: true, name: f.name, collapsed: !!f.collapsed }
+        : { id: f.id || uid(), url: f.dataURL, name: f.name, flag: f.flag || null });
+      selectedIds.clear();
+      lastSelectedIndex = null;
+      undoStack = [];
+      const s = project.settings || {};
+      updateTheme(s.theme || '');
+      document.getElementById('theme-select').value = s.theme || '';
+      if (s.cardSize) {
+        document.getElementById('size-range').value = s.cardSize;
+        document.getElementById('grid').style.setProperty('--card-w', s.cardSize + 'px');
+      }
+      showFileNames = !!s.showFileNames;
+      document.getElementById('filename-toggle').classList.toggle('active', showFileNames);
+      highlightDuplicates = !!s.highlightDuplicates;
+      document.getElementById('dup-toggle').classList.toggle('active', highlightDuplicates);
+      document.getElementById('ratio-select').value = s.ratio || '';
+      updateRatio(s.ratio || '');
+      unsaved = false;
+      render();
+      toast('Project loaded.');
+    } catch (err) {
+      console.error(err);
+      toast('Error loading project.');
+    }
+  };
+  reader.readAsText(file);
+}
+
+// --- EXPORT IMAGES ---
+async function exportImages() {
+  const imageFrames = frames.filter(f => !f.isScene);
+  if (!imageFrames.length) { toast('No images to export.'); return; }
+  toast('Downloading...');
+  const labels = computeShotLabels();
+  const sceneNames = computeSceneNames();
+  imageFrames.forEach(fr => {
+    const scene = sceneNames.get(fr.id);
+    const prefix = scene ? sanitizeFilename(scene) + '_' : '';
+    const a = document.createElement('a');
+    a.href = fr.url;
+    a.download = prefix + 'shot_' + labels.get(fr.id) + '_' + fr.name;
+    a.click();
+  });
+}
+
+// --- EXPORT PDF ---
+async function exportPDF() {
+  const imageFrames = frames.filter(f => !f.isScene);
+  if (!imageFrames.length) { toast('No images to export.'); return; }
+
+  const spinner = document.getElementById('spinner');
+  const spinnerLabel = document.getElementById('spinner-label');
+  spinner.classList.add('show');
+
+  try {
+    const { jsPDF } = window.jspdf;
+    const ratioVal = parseFloat(document.getElementById('ratio-select').value) || null;
+    const labels = computeShotLabels();
+
+    // A4 landscape
+    const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+    const pageW = 297;
+    const pageH = 210;
+    const margin = 12;
+    const cols = 3;
+    const rows = 2;
+    const perPage = cols * rows;
+    const cellW = (pageW - margin * 2 - (cols - 1) * 6) / cols;
+    const cellH = (pageH - margin * 2 - (rows - 1) * 8 - 8) / rows; // -8 for label
+    const gapX = 6;
+    const gapY = 8;
+    const labelH = 5;
+
+    let pos = 0;
+    let pageEmpty = true;
+    let imgIndex = 0;
+    for (const fr of frames) {
+      if (fr.isScene) {
+        if (!pageEmpty) {
+          pdf.addPage();
+          pageEmpty = true;
+        }
+        pos = 0;
+        pdf.setFontSize(12);
+        pdf.setTextColor(30, 30, 30);
+        pdf.text(fr.name, margin, margin - 4);
+        continue;
+      }
+
+      if (pos >= perPage) {
+        pdf.addPage();
+        pageEmpty = true;
+        pos = 0;
+      }
+
+      spinnerLabel.textContent = `Exporting PDF — ${imgIndex + 1} / ${imageFrames.length}`;
+
+      const col = pos % cols;
+      const row = Math.floor(pos / cols);
+      const x = margin + col * (cellW + gapX);
+      const y = margin + row * (cellH + gapY + labelH);
+
+      // Draw frame border
+      pdf.setDrawColor(60, 60, 60);
+      pdf.setLineWidth(0.2);
+      pdf.rect(x, y, cellW, cellH);
+
+      // Load image, crop to chosen ratio (if any) and fit inside cell
+      await new Promise(resolve => {
+        const img = new Image();
+        img.onload = () => {
+          const source = ratioVal ? cropToRatio(img, ratioVal) : img;
+          const ir = source.width / source.height;
+          const cr = cellW / cellH;
+          let iw, ih, ix, iy;
+          if (ir > cr) { iw = cellW; ih = cellW / ir; ix = x; iy = y + (cellH - ih) / 2; }
+          else { ih = cellH; iw = cellH * ir; iy = y; ix = x + (cellW - iw) / 2; }
+          pdf.addImage(source, 'JPEG', ix, iy, iw, ih);
+          resolve();
+        };
+        img.src = fr.url;
+      });
+
+      // Shot label below
+      pdf.setFontSize(7);
+      pdf.setTextColor(140, 140, 140);
+      pdf.text(labels.get(fr.id).toUpperCase(), x + 1, y + cellH + labelH - 0.5);
+
+      pageEmpty = false;
+      pos++;
+      imgIndex++;
+    }
+
+    pdf.save('storyboard.pdf');
+    toast('PDF exported.');
+  } catch(err) {
+    console.error(err);
+    toast('PDF export error.');
+  } finally {
+    spinner.classList.remove('show');
+  }
+}
+
+// --- EXPORT XML (FCPXML for DaVinci Resolve / Final Cut Pro) ---
+function exportXML() {
+  const imageFrames = frames.filter(f => !f.isScene);
+  if (!imageFrames.length) { toast('No images to export.'); return; }
+
+  const fps = 24;
+  const clipFrames = fps * 2; // 2s per shot
+  const ratioVal = parseFloat(document.getElementById('ratio-select').value) || (16 / 9);
+
+  let width = 1920, height = 1080;
+  if (ratioVal >= 1) { width = 1920; height = Math.round(1920 / ratioVal); }
+  else { height = 1920; width = Math.round(1920 * ratioVal); }
+  width -= width % 2;
+  height -= height % 2;
+
+  const ratioLabel = document.getElementById('ratio-select').selectedOptions[0].text;
+
+  const sceneNames = computeSceneNames();
+  const assets = [];
+  const clips = [];
+  let offset = 0;
+  let assetIndex = 0;
+  frames.forEach(fr => {
+    if (fr.isScene) {
+      clips.push(`            <!-- Scene: ${escapeXML(fr.name)} -->`);
+      return;
+    }
+    assetIndex++;
+    const safeName = escapeXML(fr.name);
+    const sceneName = sceneNames.get(fr.id);
+    const clipName = sceneName ? `${escapeXML(sceneName)} - ${safeName}` : safeName;
+    assets.push(`    <asset id="a${assetIndex}" name="${safeName}" src="${safeName}" hasVideo="1" duration="0s" format="r1"/>`);
+    clips.push(`            <asset-clip ref="a${assetIndex}" offset="${offset}/${fps}s" duration="${clipFrames}/${fps}s" name="${clipName}" start="0s"/>`);
+    offset += clipFrames;
+  });
+
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE fcpxml>
+<!-- Storyboard ratio: ${ratioLabel} -->
+<fcpxml version="1.9">
+  <resources>
+    <format id="r1" name="FFVideoFormat${height}p${fps}" frameDuration="1/${fps}s" width="${width}" height="${height}"/>
+${assets.join('\n')}
+  </resources>
+  <library>
+    <event name="Storyboard">
+      <project name="Storyboard">
+        <sequence format="r1" duration="${offset}/${fps}s" tcStart="0s">
+          <spine>
+${clips.join('\n')}
+          </spine>
+        </sequence>
+      </project>
+    </event>
+  </library>
+</fcpxml>`;
+
+  const blob = new Blob([xml], { type: 'application/xml' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'storyboard.fcpxml';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('XML exported — file names match your originals, place the XML where Resolve can find them.');
+}
+
+// --- SAVE REMINDER & SHORTCUT ---
+setInterval(() => {
+  if (unsaved) toast('Don\'t forget to save your project — click "Save" to keep your changes.', 5000);
+}, 10 * 60 * 1000);
+
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+    e.preventDefault();
+    saveStoryboard();
+    return;
+  }
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+    const tag = (e.target && e.target.tagName) || '';
+    if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+    e.preventDefault();
+    undo();
+  }
+});
+</script>
+</body>
+</html>
