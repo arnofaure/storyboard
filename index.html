@@ -1512,7 +1512,6 @@ function exportXML() {
 
   const ratioLabel = document.getElementById('ratio-select').selectedOptions[0].text;
 
-  const sceneNames = computeSceneNames();
   const assets = [];
   const clips = [];
   let offset = 0;
@@ -1524,10 +1523,8 @@ function exportXML() {
     }
     assetIndex++;
     const safeName = escapeXML(fr.name);
-    const sceneName = sceneNames.get(fr.id);
-    const clipName = sceneName ? `${escapeXML(sceneName)} - ${safeName}` : safeName;
     assets.push(`    <asset id="a${assetIndex}" name="${safeName}" src="${safeName}" hasVideo="1" duration="0s" format="r1"/>`);
-    clips.push(`            <asset-clip ref="a${assetIndex}" offset="${offset}/${fps}s" duration="${clipFrames}/${fps}s" name="${clipName}" start="0s"/>`);
+    clips.push(`            <asset-clip ref="a${assetIndex}" offset="${offset}/${fps}s" duration="${clipFrames}/${fps}s" name="${safeName}" start="0s"/>`);
     offset += clipFrames;
   });
 
