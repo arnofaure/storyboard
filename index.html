@@ -404,6 +404,7 @@
   .frame-card.flag-orange { outline: 2px solid #f59e0b; outline-offset: -2px; }
   .frame-card.flag-red { outline: 2px solid #ef4444; outline-offset: -2px; }
   .frame-card.flag-red .frame-img { opacity: 0.45; }
+  .frame-card.flag-red .placeholder-wrap { opacity: 0.45; }
 
   /* CLEAN VIEW — temporarily hide flags & highlight outlines */
   body.clean-view .frame-card.duplicate,
@@ -413,6 +414,7 @@
     outline: none;
   }
   body.clean-view .frame-card.flag-red .frame-img { opacity: 1; }
+  body.clean-view .frame-card.flag-red .placeholder-wrap { opacity: 1; }
   body.clean-view .frame-flag { display: none; }
 
   /* IMAGE — natural ratio (or cropped to a chosen ratio) */
@@ -434,6 +436,29 @@
     height: 100%;
     object-fit: cover;
   }
+
+  /* PLACEHOLDER SHOT — write a description until the real image is ready */
+  .placeholder-wrap {
+    display: flex;
+    background: var(--surface2);
+    border: 1px dashed var(--border-hover);
+  }
+  .placeholder-text {
+    width: 100%;
+    height: 160px;
+    resize: none;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+    font-size: 12px;
+    line-height: 1.5;
+    padding: 12px;
+    cursor: text;
+  }
+  .placeholder-text::placeholder { color: var(--text-dim); }
+  #grid.ratio-active .placeholder-text { height: 100%; }
 
   /* FOOTER */
   .frame-footer {
@@ -736,7 +761,7 @@
           <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
           GitHub
         </span>
-        <span class="tb-version">v0.1</span>
+        <span class="tb-version">v0.2</span>
       </a>
     </div>
   </div>
@@ -746,6 +771,11 @@
     Import
   </button>
   <input type="file" id="file-input" accept="image/*" multiple onchange="handleFiles(this.files)">
+
+  <button class="tb-btn" onclick="addPlaceholder()" title="Add a text placeholder — describe a shot while waiting for the real image">
+    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
+    Placeholder
+  </button>
 
   <div id="sel-bar">
     <span id="sel-count">0 selected</span>
@@ -916,6 +946,7 @@ function sanitizeFilename(s) {
 
 function updateSize(v) {
   document.getElementById('grid').style.setProperty('--card-w', v + 'px');
+  syncPlaceholderHeights();
 }
 document.getElementById('grid').style.setProperty('--card-w', '220px');
 
@@ -1038,6 +1069,7 @@ function render() {
 
     const card = document.createElement('div');
     card.className = 'frame-card'
+      + (fr.isPlaceholder ? ' placeholder-card' : '')
       + (selectedIds.has(fr.id) ? ' selected' : '')
       + (highlightDuplicates && nameCounts[fr.name] > 1 ? ' duplicate' : '')
       + (fr.flag ? ' flag-' + fr.flag : '');
@@ -1050,15 +1082,33 @@ function render() {
     check.innerHTML = `<svg viewBox="0 0 10 10" fill="none" stroke="#0d0d0d" stroke-width="2"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg>`;
     check.onclick = e => { e.stopPropagation(); toggleSelect(fr.id, i, e.shiftKey); };
 
-    // Image — natural ratio, or cropped to the chosen ratio
+    // Image or placeholder text
     const imgWrap = document.createElement('div');
-    imgWrap.className = 'frame-img-wrap';
-    const img = document.createElement('img');
-    img.className = 'frame-img';
-    img.src = fr.url;
-    img.alt = 'Shot ' + labels.get(fr.id);
-    img.loading = 'lazy';
-    imgWrap.appendChild(img);
+    if (fr.isPlaceholder) {
+      imgWrap.className = 'frame-img-wrap placeholder-wrap';
+      const textarea = document.createElement('textarea');
+      textarea.className = 'placeholder-text';
+      textarea.placeholder = 'Describe this shot…\ne.g. Close-up on hand';
+      textarea.value = fr.text || '';
+      let savedForUndo = false;
+      textarea.addEventListener('mousedown', e => { e.stopPropagation(); card.draggable = false; });
+      textarea.addEventListener('focus', () => { savedForUndo = false; });
+      textarea.addEventListener('blur', () => { card.draggable = true; });
+      textarea.addEventListener('input', () => {
+        if (!savedForUndo) { pushUndo(); savedForUndo = true; }
+        fr.text = textarea.value;
+        markUnsaved();
+      });
+      imgWrap.appendChild(textarea);
+    } else {
+      imgWrap.className = 'frame-img-wrap';
+      const img = document.createElement('img');
+      img.className = 'frame-img';
+      img.src = fr.url;
+      img.alt = 'Shot ' + labels.get(fr.id);
+      img.loading = 'lazy';
+      imgWrap.appendChild(img);
+    }
 
     // Footer
     const footer = document.createElement('div');
@@ -1082,8 +1132,8 @@ function render() {
     if (showFileNames) {
       const fname = document.createElement('span');
       fname.className = 'shot-filename';
-      fname.textContent = fr.name;
-      fname.title = fr.name;
+      fname.textContent = fr.isPlaceholder ? 'Placeholder' : fr.name;
+      fname.title = fr.isPlaceholder ? 'Placeholder' : fr.name;
       footer.appendChild(fname);
     }
     footer.appendChild(flag);
@@ -1112,6 +1162,29 @@ function render() {
   });
 
   updateSelBar();
+  syncPlaceholderHeights();
+}
+
+function syncPlaceholderHeights() {
+  const grid = document.getElementById('grid');
+  const placeholders = document.querySelectorAll('.placeholder-text');
+  if (!placeholders.length) return;
+  if (grid.classList.contains('ratio-active')) {
+    placeholders.forEach(ta => ta.style.height = '');
+    return;
+  }
+  const firstImg = document.querySelector('.frame-img');
+  if (firstImg && firstImg.offsetHeight > 0) {
+    const h = firstImg.offsetHeight + 'px';
+    placeholders.forEach(ta => ta.style.height = h);
+  } else if (firstImg) {
+    firstImg.addEventListener('load', syncPlaceholderHeights, { once: true });
+  } else {
+    const wrap = document.querySelector('.placeholder-wrap');
+    if (wrap && wrap.offsetWidth > 0) {
+      placeholders.forEach(ta => ta.style.height = Math.round(wrap.offsetWidth / 1.778) + 'px');
+    }
+  }
 }
 
 function toggleSelect(id, index, shiftKey) {
@@ -1175,6 +1248,16 @@ function toggleScene(id) {
 function deleteScene(id) {
   pushUndo();
   frames = frames.filter(f => f.id !== id);
+  markUnsaved();
+  render();
+}
+function addPlaceholder() {
+  pushUndo();
+  if (!frames.length) {
+    frames.push({ id: uid(), isScene: true, name: 'Scene 1', collapsed: false });
+  }
+  const id = uid();
+  frames.push({ id, isPlaceholder: true, name: 'Placeholder ' + id, text: '' });
   markUnsaved();
   render();
 }
@@ -1343,6 +1426,7 @@ function updateRatio(val) {
   } else {
     grid.classList.remove('ratio-active');
   }
+  syncPlaceholderHeights();
 }
 
 // --- PROJECT SAVE / OPEN (file-based) ---
@@ -1384,6 +1468,10 @@ async function saveStoryboard() {
       const fr = frames[i];
       if (fr.isScene) {
         data.push({ isScene: true, id: fr.id, name: fr.name, collapsed: fr.collapsed });
+        continue;
+      }
+      if (fr.isPlaceholder) {
+        data.push({ id: fr.id, isPlaceholder: true, name: fr.name, text: fr.text || '', flag: fr.flag || null, framing: fr.framing || '', angle: fr.angle || '', movement: fr.movement || '' });
         continue;
       }
       spinnerLabel.textContent = `Saving — ${i + 1} / ${frames.length}`;
@@ -1428,7 +1516,9 @@ function openStoryboard(file) {
       const project = JSON.parse(reader.result);
       frames = (project.frames || []).map(f => f.isScene
         ? { id: f.id || uid(), isScene: true, name: f.name, collapsed: !!f.collapsed }
-        : { id: f.id || uid(), url: f.dataURL, name: f.name, flag: f.flag || null, framing: f.framing || '', angle: f.angle || '', movement: f.movement || '' });
+        : f.isPlaceholder
+          ? { id: f.id || uid(), isPlaceholder: true, name: f.name || ('Placeholder ' + (f.id || uid())), text: f.text || '', flag: f.flag || null, framing: f.framing || '', angle: f.angle || '', movement: f.movement || '' }
+          : { id: f.id || uid(), url: f.dataURL, name: f.name, flag: f.flag || null, framing: f.framing || '', angle: f.angle || '', movement: f.movement || '' });
       selectedIds.clear();
       lastSelectedIndex = null;
       undoStack = [];
@@ -1463,7 +1553,7 @@ function openStoryboard(file) {
 
 // --- EXPORT IMAGES ---
 async function exportImages() {
-  const imageFrames = frames.filter(f => !f.isScene);
+  const imageFrames = frames.filter(f => !f.isScene && !f.isPlaceholder);
   if (!imageFrames.length) { toast('No images to export.'); return; }
   toast('Downloading...');
   const labels = computeShotLabels();
@@ -1540,21 +1630,40 @@ async function exportPDF() {
       pdf.setLineWidth(0.2);
       pdf.rect(x, y, cellW, cellH);
 
-      // Load image, crop to chosen ratio (if any) and fit inside cell
-      await new Promise(resolve => {
-        const img = new Image();
-        img.onload = () => {
-          const source = ratioVal ? cropToRatio(img, ratioVal) : img;
-          const ir = source.width / source.height;
-          const cr = cellW / cellH;
-          let iw, ih, ix, iy;
-          if (ir > cr) { iw = cellW; ih = cellW / ir; ix = x; iy = y + (cellH - ih) / 2; }
-          else { ih = cellH; iw = cellH * ir; iy = y; ix = x + (cellW - iw) / 2; }
-          pdf.addImage(source, 'JPEG', ix, iy, iw, ih);
-          resolve();
-        };
-        img.src = fr.url;
-      });
+      if (fr.isPlaceholder) {
+        // Draw dashed inner border and placeholder text
+        pdf.setLineDashPattern([1, 1], 0);
+        pdf.setDrawColor(180, 180, 180);
+        pdf.rect(x + 1, y + 1, cellW - 2, cellH - 2);
+        pdf.setLineDashPattern([], 0);
+        pdf.setFontSize(6);
+        pdf.setTextColor(180, 180, 180);
+        pdf.text('PLACEHOLDER', x + 2, y + 4);
+        if (fr.text) {
+          pdf.setFontSize(8);
+          pdf.setTextColor(110, 110, 110);
+          const lineH = 3.6;
+          const maxLines = Math.max(1, Math.floor((cellH - 8) / lineH));
+          const lines = pdf.splitTextToSize(fr.text, cellW - 4).slice(0, maxLines);
+          pdf.text(lines, x + 2, y + 8);
+        }
+      } else {
+        // Load image, crop to chosen ratio (if any) and fit inside cell
+        await new Promise(resolve => {
+          const img = new Image();
+          img.onload = () => {
+            const source = ratioVal ? cropToRatio(img, ratioVal) : img;
+            const ir = source.width / source.height;
+            const cr = cellW / cellH;
+            let iw, ih, ix, iy;
+            if (ir > cr) { iw = cellW; ih = cellW / ir; ix = x; iy = y + (cellH - ih) / 2; }
+            else { ih = cellH; iw = cellH * ir; iy = y; ix = x + (cellW - iw) / 2; }
+            pdf.addImage(source, 'JPEG', ix, iy, iw, ih);
+            resolve();
+          };
+          img.src = fr.url;
+        });
+      }
 
       // Shot label below
       pdf.setFontSize(7);
@@ -1578,7 +1687,7 @@ async function exportPDF() {
 
 // --- EXPORT XML (FCPXML for DaVinci Resolve / Final Cut Pro) ---
 function exportXML() {
-  const imageFrames = frames.filter(f => !f.isScene);
+  const imageFrames = frames.filter(f => !f.isScene && !f.isPlaceholder);
   if (!imageFrames.length) { toast('No images to export.'); return; }
 
   const fps = 24;
@@ -1600,6 +1709,10 @@ function exportXML() {
   frames.forEach(fr => {
     if (fr.isScene) {
       clips.push(`            <!-- Scene: ${escapeXML(fr.name)} -->`);
+      return;
+    }
+    if (fr.isPlaceholder) {
+      clips.push(`            <!-- Placeholder: ${escapeXML(fr.text || '')} -->`);
       return;
     }
     assetIndex++;
