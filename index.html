@@ -1523,7 +1523,9 @@ function exportXML() {
     }
     assetIndex++;
     const safeName = escapeXML(fr.name);
-    assets.push(`    <asset id="a${assetIndex}" name="${safeName}" src="${safeName}" hasVideo="1" duration="0s" format="r1"/>`);
+    assets.push(`    <asset id="a${assetIndex}" name="${safeName}" hasVideo="1" hasAudio="0" duration="0s" format="r1">
+      <media-rep kind="original-media" src="${safeName}"/>
+    </asset>`);
     clips.push(`            <asset-clip ref="a${assetIndex}" offset="${offset}/${fps}s" duration="${clipFrames}/${fps}s" name="${safeName}" start="0s"/>`);
     offset += clipFrames;
   });
@@ -1555,7 +1557,7 @@ ${clips.join('\n')}
   a.download = 'storyboard.fcpxml';
   a.click();
   URL.revokeObjectURL(a.href);
-  toast('XML exported — file names match your originals, place the XML where Resolve can find them.');
+  toast('XML exported — file names match your originals, place the XML in the same folder as your source images so Resolve can relink them.', 5000);
 }
 
 // --- SAVE REMINDER & SHORTCUT ---
