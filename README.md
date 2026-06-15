@@ -23,6 +23,14 @@ A 100% free, single-file storyboard web app — created for the love of stories 
 
 Just open `index.html` in a browser, or visit [storyboard.arnofaure.com](https://storyboard.arnofaure.com).
 
+## How to use it
+
+1. **Everything stays on your device.** Storyboard runs entirely in your browser — your images and project are never uploaded, no account needed.
+2. **Nothing is saved automatically.** Use **Save** (in the menu) to download a project file (`.json`) — keep it to continue your work later.
+3. **Resume a project** with **Open** and select that `.json` file — your shots, flags, scenes and settings come right back.
+
+The same info is available anytime in the app via **Menu → Help**.
+
 ## License
 
 Code is open source. Content/branding is licensed under [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/).
