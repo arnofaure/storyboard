@@ -165,6 +165,25 @@
     margin: 4px 2px;
   }
 
+  .tb-menu-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 6px 12px;
+    color: var(--tb-text-dim);
+    font-size: 11px;
+    text-decoration: none;
+    border-radius: var(--radius);
+    transition: color 0.15s, background 0.15s;
+  }
+  .tb-menu-footer:hover { color: var(--tb-text); background: var(--tb-surface2); }
+  .tb-menu-footer .tb-menu-footer-left {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
   .tb-sep {
     width: 0.5px;
     height: 20px;
@@ -377,7 +396,7 @@
     user-select: none;
   }
   .frame-card:hover { border-color: var(--border-hover); }
-  .frame-card.selected { border-color: #7F00FF; }
+  .frame-card.selected { border-color: #ec4899; }
   .frame-card.dragging { opacity: 0.28; transform: scale(0.96); cursor: grabbing; }
   .frame-card.drag-over { border-color: var(--accent); border-style: dashed; }
   .frame-card.duplicate { outline: 2px solid #3b82f6; outline-offset: -2px; }
@@ -463,6 +482,28 @@
   .frame-flag.flag-orange { color: #f59e0b; }
   .frame-flag.flag-red { color: #ef4444; }
 
+  /* SHOT INFO (framing / angle / movement) */
+  .frame-info {
+    display: flex;
+    gap: 4px;
+    padding: 0 10px 7px;
+  }
+  .shot-meta-select {
+    flex: 1;
+    min-width: 0;
+    background: var(--text);
+    border: 0.5px solid transparent;
+    border-radius: 4px;
+    color: var(--bg);
+    font-size: 10px;
+    font-weight: 500;
+    padding: 3px 2px;
+    cursor: pointer;
+    outline: none;
+    opacity: 0.85;
+  }
+  .shot-meta-select:hover, .shot-meta-select:focus { opacity: 1; }
+
   /* CHECKBOX */
   .frame-check {
     position: absolute;
@@ -484,8 +525,8 @@
   .frame-card:hover .frame-check,
   .frame-card.selected .frame-check { opacity: 1; }
   .frame-check.checked {
-    background: #7F00FF;
-    border-color: #7F00FF;
+    background: #ec4899;
+    border-color: #ec4899;
   }
   .frame-check.checked svg { display: block; }
   .frame-check svg { display: none; width: 10px; height: 10px; }
@@ -551,7 +592,7 @@
 
   /* PRINT / PDF LAYOUT */
   @media print {
-    #toolbar, #dropzone, .frame-del, .frame-flag, .frame-check, #toast, #spinner, #page-footer, .scene-del { display: none !important; }
+    #toolbar, #dropzone, .frame-del, .frame-flag, .frame-check, .frame-info, #toast, #spinner, #page-footer, .scene-del { display: none !important; }
     body { background: #fff; color: #000; }
     #main { padding: 12mm; }
     .frame-grid:empty { display: none; }
@@ -559,6 +600,23 @@
     .frame-card { border: 0.5px solid #ddd; background: #fff; break-inside: avoid; }
     .frame-footer { border-top-color: #ddd; }
     .shot-num { color: #888; }
+  }
+
+  /* MOBILE — not supported yet */
+  #mobile-block { display: none; }
+  @media (max-width: 720px) {
+    #toolbar, #main, #page-footer { display: none !important; }
+    #mobile-block {
+      display: flex;
+      min-height: 100vh;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 40px 24px;
+      color: var(--text-muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
   }
 </style>
 </head>
@@ -606,6 +664,14 @@
         <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M3 7v6h6"/><path d="M3 13a9 9 0 1 0 3-7l-3 3"/></svg>
         Undo
       </button>
+      <div class="tb-sep-h"></div>
+      <a class="tb-menu-footer" href="https://github.com/arnofaure/storyboard" target="_blank" rel="noopener noreferrer" title="View source on GitHub">
+        <span class="tb-menu-footer-left">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          GitHub
+        </span>
+        <span class="tb-version">v0.1</span>
+      </a>
     </div>
   </div>
   <div class="tb-sep"></div>
@@ -627,6 +693,11 @@
     <button class="tb-btn" onclick="addScene()" title="Add a scene section (groups shots; select shots first to start the scene there)">
       <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/></svg>
       Scene
+    </button>
+    <div class="tb-sep"></div>
+    <button class="tb-btn" id="info-toggle" onclick="toggleShotInfo()" title="Show framing, angle & movement selectors on each shot">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+      Shot Details
     </button>
     <div class="tb-sep"></div>
     <div class="size-wrap">
@@ -674,6 +745,10 @@
   <div id="grid"></div>
 </div>
 
+<div id="mobile-block">
+  <p>Storyboard isn't available on mobile yet — please use a desktop browser.</p>
+</div>
+
 <div id="toast"></div>
 
 <div id="spinner">
@@ -692,6 +767,10 @@ let selectedIds = new Set();
 let lastSelectedIndex = null;
 let showFileNames = false;
 let highlightDuplicates = false;
+let showShotInfo = false;
+const FRAMING_OPTIONS = ['', 'EWS', 'WS', 'MS', 'MCU', 'CU', 'XCU'];
+const ANGLE_OPTIONS = ['', 'Eye Level', 'Low Angle', 'High Angle', 'Dutch Angle'];
+const MOVEMENT_OPTIONS = ['', 'Static', 'Pan', 'Tilt Up', 'Tilt Down', 'Dolly In', 'Dolly Out'];
 let unsaved = false;
 let undoStack = [];
 const UNDO_LIMIT = 50;
@@ -928,6 +1007,15 @@ function render() {
     card.appendChild(imgWrap);
     card.appendChild(footer);
 
+    if (showShotInfo) {
+      const info = document.createElement('div');
+      info.className = 'frame-info';
+      info.appendChild(buildMetaSelect(fr, 'framing', FRAMING_OPTIONS));
+      info.appendChild(buildMetaSelect(fr, 'angle', ANGLE_OPTIONS));
+      info.appendChild(buildMetaSelect(fr, 'movement', MOVEMENT_OPTIONS));
+      card.appendChild(info);
+    }
+
     // Drag events
     card.addEventListener('dragstart', onDragStart);
     card.addEventListener('dragover', onDragOver);
@@ -1120,6 +1208,32 @@ function toggleDuplicates() {
   document.getElementById('dup-toggle').classList.toggle('active', highlightDuplicates);
   render();
 }
+function toggleShotInfo() {
+  showShotInfo = !showShotInfo;
+  document.getElementById('info-toggle').classList.toggle('active', showShotInfo);
+  render();
+}
+function buildMetaSelect(fr, field, options) {
+  const sel = document.createElement('select');
+  sel.className = 'shot-meta-select';
+  sel.title = field.charAt(0).toUpperCase() + field.slice(1);
+  options.forEach(opt => {
+    const o = document.createElement('option');
+    o.value = opt;
+    o.textContent = opt || '—';
+    if ((fr[field] || '') === opt) o.selected = true;
+    sel.appendChild(o);
+  });
+  sel.addEventListener('mousedown', e => e.stopPropagation());
+  sel.addEventListener('click', e => e.stopPropagation());
+  sel.addEventListener('change', e => {
+    e.stopPropagation();
+    pushUndo();
+    fr[field] = sel.value;
+    markUnsaved();
+  });
+  return sel;
+}
 function updateRatio(val) {
   const grid = document.getElementById('grid');
   if (val) {
@@ -1173,7 +1287,7 @@ async function saveStoryboard() {
       }
       spinnerLabel.textContent = `Saving — ${i + 1} / ${frames.length}`;
       const dataURL = fr.url.startsWith('data:') ? fr.url : await fileToDataURL(fr.url);
-      data.push({ id: fr.id, name: fr.name, dataURL, flag: fr.flag || null });
+      data.push({ id: fr.id, name: fr.name, dataURL, flag: fr.flag || null, framing: fr.framing || '', angle: fr.angle || '', movement: fr.movement || '' });
     }
     const theme = ['theme-white', 'theme-grey', 'theme-darkgrey'].find(c => document.body.classList.contains(c)) || '';
     const project = {
@@ -1184,6 +1298,7 @@ async function saveStoryboard() {
         cardSize: document.getElementById('size-range').value,
         showFileNames,
         highlightDuplicates,
+        showShotInfo,
         ratio: document.getElementById('ratio-select').value
       }
     };
@@ -1211,7 +1326,7 @@ function openStoryboard(file) {
       const project = JSON.parse(reader.result);
       frames = (project.frames || []).map(f => f.isScene
         ? { id: f.id || uid(), isScene: true, name: f.name, collapsed: !!f.collapsed }
-        : { id: f.id || uid(), url: f.dataURL, name: f.name, flag: f.flag || null });
+        : { id: f.id || uid(), url: f.dataURL, name: f.name, flag: f.flag || null, framing: f.framing || '', angle: f.angle || '', movement: f.movement || '' });
       selectedIds.clear();
       lastSelectedIndex = null;
       undoStack = [];
@@ -1226,6 +1341,8 @@ function openStoryboard(file) {
       document.getElementById('filename-toggle').classList.toggle('active', showFileNames);
       highlightDuplicates = !!s.highlightDuplicates;
       document.getElementById('dup-toggle').classList.toggle('active', highlightDuplicates);
+      showShotInfo = !!s.showShotInfo;
+      document.getElementById('info-toggle').classList.toggle('active', showShotInfo);
       document.getElementById('ratio-select').value = s.ratio || '';
       updateRatio(s.ratio || '');
       unsaved = false;
