@@ -612,9 +612,9 @@
     .shot-num { color: #888; }
   }
 
-  /* MOBILE — not supported yet */
+  /* MOBILE & TABLET — not supported yet (touch drag-and-drop isn't implemented) */
   #mobile-block { display: none; }
-  @media (max-width: 720px) {
+  @media (max-width: 720px), (hover: none) and (pointer: coarse) {
     #toolbar, #main, #page-footer { display: none !important; }
     #mobile-block {
       display: flex;
@@ -760,7 +760,7 @@
 </div>
 
 <div id="mobile-block">
-  <p>Storyboard isn't available on mobile yet — please use a desktop browser.</p>
+  <p>Storyboard isn't available on mobile or tablet yet — please use a desktop browser.</p>
 </div>
 
 <div id="toast"></div>
