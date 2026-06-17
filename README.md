@@ -4,14 +4,18 @@
 
 A 100% free, single-file storyboard web app — created for the love of stories by [Arno Faure](https://arnofaure.com).
 
-🔗 **[storyboard.arnofaure.com](https://storyboard.arnofaure.com)**
+🔗 **[storyboard.arnofaure.com](https://storyboard.arnofaure.com)** · 📝 [Changelog](CHANGELOG.md)
 
 ## Features
 
 - Drag & drop images to build your storyboard
+- Drop images onto a specific shot, or onto the dashed zone at the end of a scene, to import them exactly where you want
 - Organize shots into scenes with collapsible sections
-- Reorder shots and scenes via drag and drop
+- Reorder shots and scenes via drag and drop, including moving a shot to the very end of a scene
+- Duplicate shots individually or in bulk (multi-select)
 - Flag shots (green / orange / red) to track status
+- Name your project — used as the filename when you save
+- Auto-saves your session locally in the browser, so reloading the page restores your last state; manual Save/Open still works for backup and sharing
 - Multiple background themes (dark, white, grey, dark grey)
 - Toggle file names and duplicate-image highlighting
 - Undo (Cmd/Ctrl+Z)

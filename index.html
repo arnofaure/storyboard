@@ -226,6 +226,20 @@
     outline: none;
   }
   .tb-select:hover { border-color: var(--tb-border-hover); color: var(--tb-text); }
+  .tb-text-input {
+    background: transparent;
+    border: 0.5px solid var(--tb-border);
+    border-radius: var(--radius);
+    color: var(--tb-text);
+    font-size: 12px;
+    padding: 6px 8px;
+    outline: none;
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 8px;
+  }
+  .tb-text-input:hover, .tb-text-input:focus { border-color: var(--tb-border-hover); }
+  .tb-text-input::placeholder { color: var(--tb-text-muted); }
 
   #shot-count {
     font-size: 12px;
@@ -399,6 +413,19 @@
   .frame-card.selected { border-color: #ec4899; }
   .frame-card.dragging { opacity: 0.28; transform: scale(0.96); cursor: grabbing; }
   .frame-card.drag-over { border-color: var(--accent); border-style: dashed; }
+  .scene-end-drop {
+    border: 1.5px dashed var(--border);
+    border-radius: var(--radius, 8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-dim);
+    min-height: 90px;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+  }
+  .scene-end-drop:hover { border-color: var(--border-hover); color: var(--text-muted); }
+  .scene-end-drop.drag-over { border-color: var(--accent); color: var(--accent); background: rgba(127,127,127,0.06); }
   .frame-card.duplicate { outline: 2px solid #3b82f6; outline-offset: -2px; }
   .frame-card.flag-green { outline: 2px solid #22c55e; outline-offset: -2px; }
   .frame-card.flag-orange { outline: 2px solid #f59e0b; outline-offset: -2px; }
@@ -485,7 +512,7 @@
     flex: 1;
     margin: 0 8px;
   }
-  .frame-del {
+  .frame-del, .frame-dup {
     background: none;
     border: none;
     cursor: pointer;
@@ -495,9 +522,11 @@
     opacity: 0;
     transition: opacity 0.1s, color 0.1s;
     line-height: 1;
+    flex-shrink: 0;
   }
-  .frame-card:hover .frame-del { opacity: 1; }
+  .frame-card:hover .frame-del, .frame-card:hover .frame-dup { opacity: 1; }
   .frame-del:hover { color: #d71414; }
+  .frame-dup:hover { color: var(--accent); }
 
   .frame-flag {
     background: none;
@@ -945,7 +974,7 @@
 
   /* PRINT / PDF LAYOUT */
   @media print {
-    #toolbar, #dropzone, .frame-del, .frame-flag, .frame-check, .frame-info, #toast, #spinner, #page-footer, .scene-del { display: none !important; }
+    #toolbar, #dropzone, .frame-del, .frame-dup, .frame-flag, .frame-check, .frame-info, .scene-end-drop, #toast, #spinner, #page-footer, .scene-del { display: none !important; }
     body { background: #fff; color: #000; }
     #main { padding: 12mm; }
     .frame-grid:empty { display: none; }
@@ -982,6 +1011,7 @@
       <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
     </button>
     <div class="tb-dropdown" id="main-menu">
+      <input type="text" id="project-name-input" class="tb-text-input" placeholder="Untitled Storyboard" maxlength="80" oninput="onProjectNameChange(this.value)" onclick="event.stopPropagation()">
       <button class="tb-btn" onclick="document.getElementById('project-input').click(); closeMenu()" title="Open a saved project">
         <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg>
         Open
@@ -1028,7 +1058,7 @@
           <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
           GitHub
         </span>
-        <span class="tb-version">v0.2</span>
+        <span class="tb-version">v0.3</span>
       </a>
     </div>
   </div>
@@ -1046,6 +1076,7 @@
 
   <div id="sel-bar">
     <span id="sel-count">0 selected</span>
+    <button class="tb-btn" onclick="duplicateSelected()">Duplicate</button>
     <button class="tb-btn danger" onclick="deleteSelected()">Delete</button>
     <button class="tb-btn" onclick="clearSelection()">Deselect</button>
   </div>
@@ -1207,8 +1238,14 @@ let undoStack = [];
 const UNDO_LIMIT = 50;
 let showTimeline = false;
 let activeTimelineId = null;
+let projectName = '';
 
-function markUnsaved() { unsaved = true; }
+function onProjectNameChange(v) {
+  projectName = v;
+  markUnsaved();
+}
+
+function markUnsaved() { unsaved = true; scheduleAutosave(); }
 
 function pushUndo() {
   undoStack.push(JSON.stringify(frames));
@@ -1294,6 +1331,19 @@ function handleFiles(files) {
   });
 }
 
+// Insert dropped image files right after a specific shot/scene (drag-and-drop import at a position)
+function insertFilesAt(files, targetId) {
+  const imgs = [...files].filter(f => f.type.startsWith('image/'));
+  if (!imgs.length) return;
+  pushUndo();
+  const newFrames = imgs.map(f => ({ id: uid(), url: URL.createObjectURL(f), name: f.name }));
+  let idx = frames.findIndex(f => f.id === targetId);
+  idx = idx < 0 ? frames.length - 1 : idx;
+  frames.splice(idx + 1, 0, ...newFrames);
+  markUnsaved();
+  render();
+}
+
 // --- RENDER ---
 function render() {
   const grid = document.getElementById('grid');
@@ -1318,6 +1368,20 @@ function render() {
 
   let currentGrid = null;
   let currentCollapsed = false;
+  let lastSceneId = null;
+
+  function appendSceneEndDrop(gridEl, sceneId) {
+    const drop = document.createElement('div');
+    drop.className = 'scene-end-drop';
+    drop.dataset.dropEnd = sceneId;
+    drop.title = 'Click or drag images here to add them at the end of this scene — or drop a shot here to move it to the end';
+    drop.innerHTML = `<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>`;
+    drop.addEventListener('dragover', onDragOver);
+    drop.addEventListener('dragleave', onDragLeave);
+    drop.addEventListener('drop', onDropCard);
+    drop.addEventListener('click', () => importFilesAtSceneEnd(sceneId));
+    gridEl.appendChild(drop);
+  }
 
   function ensureGrid(sceneId) {
     if (!currentGrid) {
@@ -1336,6 +1400,7 @@ function render() {
 
   frames.forEach((fr, i) => {
     if (fr.isScene) {
+      if (currentGrid && lastSceneId) appendSceneEndDrop(currentGrid, lastSceneId);
       const header = document.createElement('div');
       header.className = 'scene-header' + (fr.collapsed ? ' collapsed' : '');
       header.dataset.id = fr.id;
@@ -1379,6 +1444,7 @@ function render() {
 
       currentGrid = null;
       currentCollapsed = fr.collapsed;
+      lastSceneId = fr.id;
       if (!currentCollapsed) ensureGrid(fr.id);
       return;
     }
@@ -1440,6 +1506,12 @@ function render() {
     flag.innerHTML = `<svg width="12" height="12" fill="${fr.flag ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 22V4a1 1 0 011-1h13.5a.5.5 0 01.4.8L15 9l3.9 5.2a.5.5 0 01-.4.8H6a1 1 0 00-1 1v6"/></svg>`;
     flag.onclick = e => { e.stopPropagation(); toggleFlag(fr.id); };
 
+    const dup = document.createElement('button');
+    dup.className = 'frame-dup';
+    dup.title = 'Duplicate shot';
+    dup.innerHTML = `<svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>`;
+    dup.onclick = e => { e.stopPropagation(); duplicateFrame(fr.id); };
+
     const del = document.createElement('button');
     del.className = 'frame-del';
     del.title = 'Delete';
@@ -1455,6 +1527,7 @@ function render() {
       footer.appendChild(fname);
     }
     footer.appendChild(flag);
+    footer.appendChild(dup);
     footer.appendChild(del);
     card.appendChild(check);
     card.appendChild(imgWrap);
@@ -1478,6 +1551,8 @@ function render() {
 
     ensureGrid().appendChild(card);
   });
+
+  if (currentGrid && lastSceneId) appendSceneEndDrop(currentGrid, lastSceneId);
 
   updateSelBar();
   syncPlaceholderHeights();
@@ -1531,6 +1606,26 @@ function deleteFrame(id) {
   pushUndo();
   selectedIds.delete(id);
   frames = frames.filter(f => f.id !== id);
+  markUnsaved();
+  render();
+}
+function duplicateFrame(id) {
+  const idx = frames.findIndex(f => f.id === id);
+  if (idx < 0) return;
+  pushUndo();
+  frames.splice(idx + 1, 0, { ...frames[idx], id: uid() });
+  markUnsaved();
+  render();
+}
+function duplicateSelected() {
+  if (!selectedIds.size) return;
+  pushUndo();
+  const result = [];
+  frames.forEach(fr => {
+    result.push(fr);
+    if (!fr.isScene && selectedIds.has(fr.id)) result.push({ ...fr, id: uid() });
+  });
+  frames = result;
   markUnsaved();
   render();
 }
@@ -1625,11 +1720,58 @@ function onDragLeave(e) {
   e.stopPropagation();
   this.classList.remove('drag-over');
 }
+// Index right after the last shot of a scene (i.e. where the next scene starts, or end of array)
+function sceneEndIndex(arr, sceneId) {
+  const startIdx = arr.findIndex(f => f.id === sceneId);
+  if (startIdx < 0) return arr.length;
+  let i = startIdx + 1;
+  while (i < arr.length && !arr[i].isScene) i++;
+  return i;
+}
+function insertFilesAtSceneEnd(files, sceneId) {
+  const imgs = [...files].filter(f => f.type.startsWith('image/'));
+  if (!imgs.length) return;
+  pushUndo();
+  const newFrames = imgs.map(f => ({ id: uid(), url: URL.createObjectURL(f), name: f.name }));
+  frames.splice(sceneEndIndex(frames, sceneId), 0, ...newFrames);
+  markUnsaved();
+  render();
+}
+function importFilesAtSceneEnd(sceneId) {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.multiple = true;
+  input.onchange = () => insertFilesAtSceneEnd(input.files, sceneId);
+  input.click();
+}
+function moveToEndOfScene(sceneId) {
+  if (!dragSrc) return;
+  const movingIds = getMovingIds(dragSrc);
+  const moving = frames.filter(f => movingIds.has(f.id));
+  if (!moving.length || moving[0].isScene) return;
+  pushUndo();
+  const remaining = frames.filter(f => !movingIds.has(f.id));
+  remaining.splice(sceneEndIndex(remaining, sceneId), 0, ...moving);
+  frames = remaining;
+  markUnsaved();
+  render();
+}
 function onDropCard(e) {
   e.preventDefault();
   e.stopPropagation();
   this.classList.remove('drag-over');
   const tid = this.dataset.id;
+  const dropEndScene = this.dataset.dropEnd;
+
+  if (e.dataTransfer.files && e.dataTransfer.files.length) {
+    if (dropEndScene) insertFilesAtSceneEnd(e.dataTransfer.files, dropEndScene);
+    else insertFilesAt(e.dataTransfer.files, tid);
+    return;
+  }
+
+  if (dropEndScene) { moveToEndOfScene(dropEndScene); return; }
+
   if (!tid || tid === dragSrc) return;
 
   const movingIds = getMovingIds(dragSrc);
@@ -1653,7 +1795,7 @@ function onDropCard(e) {
   render();
 }
 function onDragEnd() {
-  document.querySelectorAll('.frame-card, .scene-header').forEach(c => c.classList.remove('dragging', 'drag-over'));
+  document.querySelectorAll('.frame-card, .scene-header, .scene-end-drop').forEach(c => c.classList.remove('dragging', 'drag-over'));
   dragSrc = null;
 }
 
@@ -1801,6 +1943,7 @@ async function saveStoryboard() {
     const theme = ['theme-white', 'theme-grey', 'theme-darkgrey'].find(c => document.body.classList.contains(c)) || '';
     const project = {
       version: 1,
+      name: projectName,
       frames: data,
       settings: {
         theme,
@@ -1815,7 +1958,7 @@ async function saveStoryboard() {
     const blob = new Blob([JSON.stringify(project)], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'storyboard.json';
+    a.download = (sanitizeFilename(projectName) || 'storyboard') + '.json';
     a.click();
     URL.revokeObjectURL(a.href);
     unsaved = false;
@@ -1828,38 +1971,48 @@ async function saveStoryboard() {
   }
 }
 
+// Shared between opening a saved .json project and restoring an autosave snapshot
+function framesFromSaved(savedFrames, resolveUrl) {
+  return (savedFrames || []).map(f => f.isScene
+    ? { id: f.id || uid(), isScene: true, name: f.name, collapsed: !!f.collapsed }
+    : f.isPlaceholder
+      ? { id: f.id || uid(), isPlaceholder: true, name: f.name || ('Placeholder ' + (f.id || uid())), text: f.text || '', flag: f.flag || null, framing: f.framing || '', angle: f.angle || '', movement: f.movement || '' }
+      : { id: f.id || uid(), url: resolveUrl(f), name: f.name, flag: f.flag || null, framing: f.framing || '', angle: f.angle || '', movement: f.movement || '' });
+}
+
+function applyProjectSettings(s) {
+  updateTheme(s.theme || '');
+  document.getElementById('theme-select').value = s.theme || '';
+  if (s.cardSize) {
+    document.getElementById('size-range').value = s.cardSize;
+    document.getElementById('grid').style.setProperty('--card-w', s.cardSize + 'px');
+  }
+  showFileNames = !!s.showFileNames;
+  document.getElementById('filename-toggle').classList.toggle('active', showFileNames);
+  highlightDuplicates = !!s.highlightDuplicates;
+  document.getElementById('dup-toggle').classList.toggle('active', highlightDuplicates);
+  showShotInfo = !!s.showShotInfo;
+  document.getElementById('info-toggle').classList.toggle('active', showShotInfo);
+  cleanView = !!s.cleanView;
+  document.body.classList.toggle('clean-view', cleanView);
+  document.getElementById('clean-toggle').classList.toggle('active', cleanView);
+  document.getElementById('ratio-select').value = s.ratio || document.getElementById('ratio-select').value;
+  updateRatio(document.getElementById('ratio-select').value);
+}
+
 function openStoryboard(file) {
   if (!file) return;
   const reader = new FileReader();
   reader.onload = () => {
     try {
       const project = JSON.parse(reader.result);
-      frames = (project.frames || []).map(f => f.isScene
-        ? { id: f.id || uid(), isScene: true, name: f.name, collapsed: !!f.collapsed }
-        : f.isPlaceholder
-          ? { id: f.id || uid(), isPlaceholder: true, name: f.name || ('Placeholder ' + (f.id || uid())), text: f.text || '', flag: f.flag || null, framing: f.framing || '', angle: f.angle || '', movement: f.movement || '' }
-          : { id: f.id || uid(), url: f.dataURL, name: f.name, flag: f.flag || null, framing: f.framing || '', angle: f.angle || '', movement: f.movement || '' });
+      frames = framesFromSaved(project.frames, f => f.dataURL);
       selectedIds.clear();
       lastSelectedIndex = null;
       undoStack = [];
-      const s = project.settings || {};
-      updateTheme(s.theme || '');
-      document.getElementById('theme-select').value = s.theme || '';
-      if (s.cardSize) {
-        document.getElementById('size-range').value = s.cardSize;
-        document.getElementById('grid').style.setProperty('--card-w', s.cardSize + 'px');
-      }
-      showFileNames = !!s.showFileNames;
-      document.getElementById('filename-toggle').classList.toggle('active', showFileNames);
-      highlightDuplicates = !!s.highlightDuplicates;
-      document.getElementById('dup-toggle').classList.toggle('active', highlightDuplicates);
-      showShotInfo = !!s.showShotInfo;
-      document.getElementById('info-toggle').classList.toggle('active', showShotInfo);
-      cleanView = !!s.cleanView;
-      document.body.classList.toggle('clean-view', cleanView);
-      document.getElementById('clean-toggle').classList.toggle('active', cleanView);
-      document.getElementById('ratio-select').value = s.ratio || '';
-      updateRatio(s.ratio || '');
+      projectName = project.name || '';
+      document.getElementById('project-name-input').value = projectName;
+      applyProjectSettings(project.settings || {});
       unsaved = false;
       render();
       toast('Project loaded.');
@@ -1869,6 +2022,79 @@ function openStoryboard(file) {
     }
   };
   reader.readAsText(file);
+}
+
+// --- AUTOSAVE (IndexedDB, local to this browser) ---
+let autosaveTimer = null;
+let autosaveDBPromise = null;
+
+function openAutosaveDB() {
+  if (!autosaveDBPromise) {
+    autosaveDBPromise = new Promise((resolve, reject) => {
+      const req = indexedDB.open('storyboard-autosave', 1);
+      req.onupgradeneeded = () => req.result.createObjectStore('snapshots');
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+  return autosaveDBPromise;
+}
+
+function scheduleAutosave() {
+  clearTimeout(autosaveTimer);
+  autosaveTimer = setTimeout(autosaveProject, 1500);
+}
+
+async function autosaveProject() {
+  try {
+    const data = [];
+    for (const fr of frames) {
+      if (fr.isScene) { data.push({ isScene: true, id: fr.id, name: fr.name, collapsed: fr.collapsed }); continue; }
+      if (fr.isPlaceholder) { data.push({ id: fr.id, isPlaceholder: true, name: fr.name, text: fr.text || '', flag: fr.flag || null, framing: fr.framing || '', angle: fr.angle || '', movement: fr.movement || '' }); continue; }
+      const blob = await fetch(fr.url).then(r => r.blob());
+      data.push({ id: fr.id, name: fr.name, blob, flag: fr.flag || null, framing: fr.framing || '', angle: fr.angle || '', movement: fr.movement || '' });
+    }
+    const theme = ['theme-white', 'theme-grey', 'theme-darkgrey'].find(c => document.body.classList.contains(c)) || '';
+    const snapshot = {
+      name: projectName,
+      frames: data,
+      settings: {
+        theme,
+        cardSize: document.getElementById('size-range').value,
+        showFileNames,
+        highlightDuplicates,
+        showShotInfo,
+        cleanView,
+        ratio: document.getElementById('ratio-select').value
+      }
+    };
+    const db = await openAutosaveDB();
+    db.transaction('snapshots', 'readwrite').objectStore('snapshots').put(snapshot, 'current');
+  } catch (err) {
+    console.error('Autosave failed', err);
+  }
+}
+
+async function loadAutosave() {
+  try {
+    const db = await openAutosaveDB();
+    const snapshot = await new Promise((resolve, reject) => {
+      const req = db.transaction('snapshots', 'readonly').objectStore('snapshots').get('current');
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+    if (!snapshot || !snapshot.frames || !snapshot.frames.length) return;
+
+    frames = framesFromSaved(snapshot.frames, f => URL.createObjectURL(f.blob));
+    projectName = snapshot.name || '';
+    document.getElementById('project-name-input').value = projectName;
+    applyProjectSettings(snapshot.settings || {});
+    unsaved = false;
+    render();
+    toast('Restored your last session.');
+  } catch (err) {
+    console.error('Autosave restore failed', err);
+  }
 }
 
 // --- EXPORT IMAGES ---
@@ -2314,6 +2540,7 @@ function playerPause() {
 
 // Player drag-to-reposition
 document.addEventListener('DOMContentLoaded', () => {
+  loadAutosave();
   const header = document.getElementById('player-header');
   header.addEventListener('mousedown', e => {
     if (e.target.closest('#player-close')) return;
