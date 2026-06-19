@@ -2,6 +2,16 @@
 
 All notable changes to Storyboard are documented here.
 
+## [0.5] - 2026-06-19
+
+### Added
+- Full keyboard shortcut set: Ctrl/Cmd+D (duplicate selection), Ctrl/Cmd+A (select all), Delete (delete selection), C (Clean View), T (Timeline), F (Show File Name), 1-4/0 (quick flag selection), Escape (deselect + close overlays) — shown next to their labels in the menu and toolbar
+
+### Changed
+- "Don't forget to save" reminder moved to a prominent red banner at the top of the screen, replacing the easy-to-miss bottom toast
+- Shot count in the toolbar now reflects the active flag filter ("X of Y shots")
+- Clean View now also hides the shot number badge, not just flags and highlights
+
 ## [0.4] - 2026-06-18
 
 ### Added
