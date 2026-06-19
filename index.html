@@ -426,26 +426,59 @@
   }
   .scene-end-drop:hover { border-color: var(--border-hover); color: var(--text-muted); }
   .scene-end-drop.drag-over { border-color: var(--accent); color: var(--accent); background: rgba(127,127,127,0.06); }
-  .frame-card.duplicate { outline: 2px solid #3b82f6; outline-offset: -2px; }
-  .frame-card.flag-green { outline: 2px solid #22c55e; outline-offset: -2px; }
-  .frame-card.flag-orange { outline: 2px solid #f59e0b; outline-offset: -2px; }
-  .frame-card.flag-red { outline: 2px solid #ef4444; outline-offset: -2px; }
+  .frame-card.flag-blue::after,
+  .frame-card.flag-green::after,
+  .frame-card.flag-orange::after,
+  .frame-card.flag-red::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+  }
+  .frame-card.flag-blue::after { border: 2px solid #3b82f6; }
+  .frame-card.flag-green::after { border: 2px solid #22c55e; }
+  .frame-card.flag-orange::after { border: 2px solid #f59e0b; }
+  .frame-card.flag-red::after { border: 2px solid #ef4444; }
   .frame-card.flag-red .frame-img { opacity: 0.45; }
   .frame-card.flag-red .placeholder-wrap { opacity: 0.45; }
+  .frame-card.duplicate .frame-img,
+  .frame-card.duplicate .placeholder-wrap { opacity: 0.35; }
+  .frame-card.duplicate .frame-img-wrap::after {
+    content: 'Duplicate Shot';
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: #fff;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+    pointer-events: none;
+  }
 
   /* CLEAN VIEW — temporarily hide flags & highlight outlines */
-  body.clean-view .frame-card.duplicate,
-  body.clean-view .frame-card.flag-green,
-  body.clean-view .frame-card.flag-orange,
-  body.clean-view .frame-card.flag-red {
-    outline: none;
+  body.clean-view .frame-card.flag-blue::after,
+  body.clean-view .frame-card.flag-green::after,
+  body.clean-view .frame-card.flag-orange::after,
+  body.clean-view .frame-card.flag-red::after {
+    display: none;
   }
   body.clean-view .frame-card.flag-red .frame-img { opacity: 1; }
   body.clean-view .frame-card.flag-red .placeholder-wrap { opacity: 1; }
+  body.clean-view .frame-card.duplicate .frame-img,
+  body.clean-view .frame-card.duplicate .placeholder-wrap { opacity: 1; }
+  body.clean-view .frame-card.duplicate .frame-img-wrap::after { display: none; }
   body.clean-view .frame-flag { display: none; }
 
   /* IMAGE — natural ratio (or cropped to a chosen ratio) */
   .frame-img-wrap {
+    position: relative;
     width: 100%;
     overflow: hidden;
     background: #000;
@@ -542,6 +575,7 @@
   }
   .frame-card:hover .frame-flag,
   .frame-flag.active { opacity: 1; }
+  .frame-flag.flag-blue { color: #3b82f6; }
   .frame-flag.flag-green { color: #22c55e; }
   .frame-flag.flag-orange { color: #f59e0b; }
   .frame-flag.flag-red { color: #ef4444; }
@@ -688,6 +722,94 @@
     line-height: 1;
   }
   #help-close:hover { color: var(--text); }
+
+  /* CINEMATIC SHOT TYPES REFERENCE OVERLAY */
+  #shottypes-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+    z-index: 300;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  #shottypes-overlay.show { display: flex; }
+  #shottypes-modal {
+    position: relative;
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    max-width: 640px;
+    width: 100%;
+    max-height: 82vh;
+    overflow-y: auto;
+    padding: 24px 28px;
+    color: var(--text);
+  }
+  #shottypes-modal h2 {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  #shottypes-modal > p.st-intro {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 18px;
+  }
+  #shottypes-modal h3 {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text);
+    margin: 22px 0 4px;
+    padding-bottom: 6px;
+    border-bottom: 0.5px solid var(--border);
+  }
+  #shottypes-modal h3:first-of-type { margin-top: 0; }
+  #shottypes-modal h4 {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin: 14px 0 4px;
+  }
+  .st-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 7px 0;
+    border-bottom: 0.5px solid var(--border);
+    font-size: 12.5px;
+    line-height: 1.5;
+  }
+  .st-item:last-child { border-bottom: none; }
+  .st-item strong { color: var(--text); }
+  .st-item span { color: var(--text-muted); }
+  .st-prompt { margin-top: 22px; }
+  .st-prompt-template, .st-prompt-example {
+    font-size: 12px;
+    font-style: italic;
+    color: var(--text-muted);
+    background: var(--surface2);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    margin-top: 8px;
+    line-height: 1.5;
+  }
+  #shottypes-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px;
+    line-height: 1;
+  }
+  #shottypes-close:hover { color: var(--text); }
 
   /* PAGE FOOTER */
   #page-footer {
@@ -1052,13 +1174,17 @@
         <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
         Help
       </button>
+      <button class="tb-btn" onclick="openShotTypes(); closeMenu()" title="Reference guide to shot sizes, camera angles and movements">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+        Cinematic Shot Types
+      </button>
       <div class="tb-sep-h"></div>
       <a class="tb-menu-footer" href="https://github.com/arnofaure/storyboard" target="_blank" rel="noopener noreferrer" title="View source on GitHub">
         <span class="tb-menu-footer-left">
           <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
           GitHub
         </span>
-        <span class="tb-version">v0.3</span>
+        <span class="tb-version">v0.4</span>
       </a>
     </div>
   </div>
@@ -1088,6 +1214,18 @@
       <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/></svg>
       Scene
     </button>
+    <div class="tb-sep"></div>
+    <div class="size-wrap">
+      <span class="size-label">Flag</span>
+      <select id="flag-filter-select" class="tb-select" onchange="updateFlagFilter(this.value)" title="Show only shots with a specific flag">
+        <option value="">All</option>
+        <option value="none">⬜ No Flag</option>
+        <option value="blue">🔵 In Progress</option>
+        <option value="green">🟢 Approved</option>
+        <option value="orange">🟠 Needs Revision</option>
+        <option value="red">🔴 Rejected</option>
+      </select>
+    </div>
     <div class="tb-sep"></div>
     <button class="tb-btn" id="info-toggle" onclick="toggleShotInfo()" title="Show framing, angle & movement selectors on each shot">
       <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
@@ -1170,6 +1308,80 @@
   </div>
 </div>
 
+<div id="shottypes-overlay" onclick="if (event.target === this) closeShotTypes()">
+  <div id="shottypes-modal">
+    <button id="shottypes-close" onclick="closeShotTypes()" title="Close">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+    <h2>Cinematic Shot Types, Angles &amp; Movements</h2>
+    <p class="st-intro">A quick reference for framing, angles and camera movement — handy when planning shots or writing prompts.</p>
+
+    <h3>Shot Sizes (Framing)</h3>
+    <div class="st-item"><strong>Extreme Wide Shot (EWS)</strong><span>Shows a vast environment with the subject appearing very small. Use: scale, geography, isolation, establishing location.</span></div>
+    <div class="st-item"><strong>Wide Shot (WS)</strong><span>Shows the subject within the surrounding environment. Use: context, action, atmosphere.</span></div>
+    <div class="st-item"><strong>Full Shot (FS)</strong><span>Shows the entire subject from head to toe. Use: movement, body language, choreography.</span></div>
+    <div class="st-item"><strong>Cowboy Shot (American Shot)</strong><span>Frames the subject roughly from mid-thigh upward. Use: character presence, western-inspired compositions.</span></div>
+    <div class="st-item"><strong>Medium Shot (MS)</strong><span>Frames the subject from the waist up. Use: dialogue, balanced storytelling.</span></div>
+    <div class="st-item"><strong>Medium Close-Up (MCU)</strong><span>Frames the subject from the chest up. Use: conversations, emotional engagement.</span></div>
+    <div class="st-item"><strong>Close-Up (CU)</strong><span>Frames the face or a specific subject detail. Use: emotion, reaction, dramatic emphasis.</span></div>
+    <div class="st-item"><strong>Extreme Close-Up (ECU)</strong><span>Frames a small detail such as an eye, hand, or object. Use: tension, symbolism, intimacy.</span></div>
+    <div class="st-item"><strong>Insert Shot</strong><span>A close shot of an object or detail relevant to the story. Use: narrative information, visual emphasis.</span></div>
+
+    <h3>Camera Angles</h3>
+    <div class="st-item"><strong>Eye-Level Shot</strong><span>Camera positioned at the subject's eye height. Effect: neutral, natural, relatable.</span></div>
+    <div class="st-item"><strong>Low Angle Shot</strong><span>Camera looks upward at the subject. Effect: power, dominance, heroism.</span></div>
+    <div class="st-item"><strong>High Angle Shot</strong><span>Camera looks downward at the subject. Effect: vulnerability, weakness, isolation.</span></div>
+    <div class="st-item"><strong>Worm's Eye View</strong><span>Extreme low angle looking almost straight upward. Effect: monumentality, awe, scale.</span></div>
+    <div class="st-item"><strong>Bird's Eye View</strong><span>Camera positioned directly above the scene. Effect: geography, strategy, overview.</span></div>
+    <div class="st-item"><strong>Overhead Shot (Top Shot)</strong><span>Perfect vertical view from above. Effect: graphic composition, abstraction.</span></div>
+    <div class="st-item"><strong>Point of View (POV) Shot</strong><span>Shows what a character sees. Effect: immersion, subjectivity.</span></div>
+    <div class="st-item"><strong>Over-the-Shoulder Shot (OTS)</strong><span>Camera frames one character while viewing another over their shoulder. Effect: relationships, dialogue dynamics.</span></div>
+    <div class="st-item"><strong>Profile Shot</strong><span>Subject viewed from the side. Effect: distance, contemplation, confrontation.</span></div>
+    <div class="st-item"><strong>Frontal Shot</strong><span>Subject faces the camera directly. Effect: intimacy, connection, confrontation.</span></div>
+    <div class="st-item"><strong>Three-Quarter Angle</strong><span>Subject turned slightly away from the camera. Effect: naturalistic portraiture.</span></div>
+    <div class="st-item"><strong>Dutch Angle (Tilted Shot)</strong><span>Camera tilted off the horizon. Effect: unease, instability, psychological tension.</span></div>
+
+    <h3>Camera Movements</h3>
+    <h4>Translational</h4>
+    <div class="st-item"><strong>Dolly In / Push In</strong><span>Camera moves toward the subject. Use: building tension, emotional emphasis.</span></div>
+    <div class="st-item"><strong>Dolly Out / Pull Out</strong><span>Camera moves away from the subject. Use: isolation, reveal, scale.</span></div>
+    <div class="st-item"><strong>Tracking Shot</strong><span>Camera follows the subject's movement. Use: action, immersion, continuity.</span></div>
+    <div class="st-item"><strong>Side Track / Truck Shot</strong><span>Camera moves laterally alongside the subject. Use: following movement, dynamic framing.</span></div>
+    <div class="st-item"><strong>Arc Shot</strong><span>Camera moves in a circular path around the subject. Use: drama, energy, emotional intensity.</span></div>
+    <div class="st-item"><strong>Pedestal Up / Down</strong><span>Camera moves vertically. Use: revealing height, importance, or detail.</span></div>
+
+    <h4>Rotational</h4>
+    <div class="st-item"><strong>Pan Left / Right</strong><span>Camera rotates horizontally. Use: reveals, following action, exploration.</span></div>
+    <div class="st-item"><strong>Tilt Up / Down</strong><span>Camera rotates vertically. Use: revealing height, scale, architecture.</span></div>
+    <div class="st-item"><strong>Roll</strong><span>Camera rotates around the lens axis. Use: disorientation, stylization.</span></div>
+    <div class="st-item"><strong>Orbit Shot</strong><span>Camera circles around the subject while maintaining focus. Use: dynamic perspective, cinematic energy.</span></div>
+
+    <h4>Optical</h4>
+    <div class="st-item"><strong>Zoom In</strong><span>Lens magnification increases. Use: focus attention, dramatic emphasis.</span></div>
+    <div class="st-item"><strong>Zoom Out</strong><span>Lens magnification decreases. Use: reveal context, create distance.</span></div>
+    <div class="st-item"><strong>Dolly Zoom (Vertigo Effect)</strong><span>Camera moves while zooming in the opposite direction. Use: psychological tension, distortion of space.</span></div>
+    <div class="st-item"><strong>Rack Focus</strong><span>Focus shifts between foreground and background. Use: directing viewer attention.</span></div>
+
+    <h3>Specialized Camera Movements</h3>
+    <div class="st-item"><strong>Crane Shot</strong><span>Camera mounted on a crane. Use: large reveals, epic scale.</span></div>
+    <div class="st-item"><strong>Jib Shot</strong><span>Camera mounted on a smaller crane arm. Use: smooth vertical movement.</span></div>
+    <div class="st-item"><strong>Drone Shot</strong><span>Camera mounted on an aerial drone. Use: establishing shots, landscapes, movement.</span></div>
+    <div class="st-item"><strong>Steadicam Shot</strong><span>Stabilized camera operated by a person. Use: fluid movement through environments.</span></div>
+    <div class="st-item"><strong>Gimbal Shot</strong><span>Motorized stabilization system. Use: smooth tracking and movement.</span></div>
+    <div class="st-item"><strong>Handheld Shot</strong><span>Camera operated without stabilization. Use: realism, urgency, documentary feel.</span></div>
+    <div class="st-item"><strong>Snorricam Shot</strong><span>Camera attached directly to the actor. Use: psychological intensity, altered perception.</span></div>
+    <div class="st-item"><strong>Whip Pan</strong><span>Extremely fast pan movement. Use: transitions, energy, action.</span></div>
+    <div class="st-item"><strong>Push-Pull Shot</strong><span>Simultaneous forward and backward movement. Use: visual tension and stylized storytelling.</span></div>
+    <div class="st-item"><strong>Bullet Time</strong><span>Camera movement around a seemingly frozen subject. Use: stylized action and dramatic moments.</span></div>
+
+    <div class="st-prompt">
+      <h3>Common Cinematic Prompt Structure</h3>
+      <p class="st-prompt-template">"A cinematic [shot size], [camera angle], [subject], [action], [camera movement], [lighting], [environment], [mood], ultra realistic, filmic, shallow depth of field, 35mm cinema lens."</p>
+      <p class="st-prompt-example">"A cinematic medium close-up, low angle, female astronaut, looking toward a distant planet, slow dolly in, soft rim lighting, futuristic spacecraft interior, hopeful mood, ultra realistic, cinematic depth of field, 35mm film."</p>
+    </div>
+  </div>
+</div>
+
 <div id="timeline"></div>
 
 <div id="player">
@@ -1230,9 +1442,19 @@ let showFileNames = false;
 let highlightDuplicates = false;
 let showShotInfo = false;
 let cleanView = false;
-const FRAMING_OPTIONS = ['', 'EWS', 'WS', 'MS', 'MCU', 'CU', 'XCU'];
-const ANGLE_OPTIONS = ['', 'Eye Level', 'Low Angle', 'High Angle', 'Dutch Angle'];
-const MOVEMENT_OPTIONS = ['', 'Static', 'Pan', 'Tilt Up', 'Tilt Down', 'Dolly In', 'Dolly Out'];
+let flagFilter = '';
+
+function updateFlagFilter(val) {
+  flagFilter = val;
+  render();
+}
+function passesFlagFilter(fr) {
+  if (!flagFilter) return true;
+  return flagFilter === 'none' ? !fr.flag : fr.flag === flagFilter;
+}
+const FRAMING_OPTIONS = ['', 'EWS', 'WS', 'FS', 'Cowboy', 'MS', 'MCU', 'CU', 'ECU', 'Insert'];
+const ANGLE_OPTIONS = ['', 'Eye Level', 'Low Angle', 'High Angle', "Bird's Eye", "Worm's Eye", 'POV', 'OTS', 'Profile', 'Dutch Angle'];
+const MOVEMENT_OPTIONS = ['', 'Static', 'Pan', 'Tilt Up', 'Tilt Down', 'Dolly In', 'Dolly Out', 'Tracking', 'Arc', 'Zoom In', 'Zoom Out', 'Handheld', 'Crane'];
 let unsaved = false;
 let undoStack = [];
 const UNDO_LIMIT = 50;
@@ -1450,6 +1672,7 @@ function render() {
     }
 
     if (currentCollapsed) return;
+    if (!passesFlagFilter(fr)) return;
 
     const card = document.createElement('div');
     card.className = 'frame-card'
@@ -1502,7 +1725,7 @@ function render() {
     num.textContent = labels.get(fr.id);
     const flag = document.createElement('button');
     flag.className = 'frame-flag' + (fr.flag ? ' active flag-' + fr.flag : '');
-    flag.title = fr.flag ? 'Flag: ' + fr.flag + ' (click to change)' : 'Flag this shot';
+    flag.title = fr.flag ? 'Flag: ' + (FLAG_LABELS[fr.flag] || fr.flag) + ' (click to change)' : 'Flag this shot';
     flag.innerHTML = `<svg width="12" height="12" fill="${fr.flag ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 22V4a1 1 0 011-1h13.5a.5.5 0 01.4.8L15 9l3.9 5.2a.5.5 0 01-.4.8H6a1 1 0 00-1 1v6"/></svg>`;
     flag.onclick = e => { e.stopPropagation(); toggleFlag(fr.id); };
 
@@ -1629,7 +1852,8 @@ function duplicateSelected() {
   markUnsaved();
   render();
 }
-const FLAG_CYCLE = [null, 'green', 'orange', 'red'];
+const FLAG_CYCLE = [null, 'blue', 'green', 'orange', 'red'];
+const FLAG_LABELS = { blue: 'In Progress', green: 'Approved', orange: 'Needs Revision', red: 'Rejected' };
 function toggleFlag(id) {
   pushUndo();
   const fr = frames.find(f => f.id === id);
@@ -1824,8 +2048,14 @@ function openHelp() {
 function closeHelp() {
   document.getElementById('help-overlay').classList.remove('show');
 }
+function openShotTypes() {
+  document.getElementById('shottypes-overlay').classList.add('show');
+}
+function closeShotTypes() {
+  document.getElementById('shottypes-overlay').classList.remove('show');
+}
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') closeHelp();
+  if (e.key === 'Escape') { closeHelp(); closeShotTypes(); }
 });
 document.addEventListener('click', e => {
   const menu = document.getElementById('main-menu');

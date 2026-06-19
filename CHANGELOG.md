@@ -2,6 +2,20 @@
 
 All notable changes to Storyboard are documented here.
 
+## [0.4] - 2026-06-18
+
+### Added
+- "In Progress" (blue) flag, added before Approved (green) in the flag cycle: None → In Progress → Approved → Needs Revision → Rejected
+- Flag filter in the toolbar — show only shots with a specific flag (or no flag), with a colored icon next to each option
+- "Cinematic Shot Types" reference guide in the menu — an overlay covering shot sizes, camera angles, camera movements and a prompt-structure template
+- Shot Details dropdowns (framing/angle/movement) expanded with more essential options (Full Shot, Cowboy Shot, Insert, Bird's/Worm's Eye, POV, OTS, Tracking, Arc, Zoom In/Out, Handheld, Crane, etc.)
+
+### Changed
+- "Show Duplicates" highlight redesigned: instead of a blue outline, duplicate shots are now dimmed with a "Duplicate Shot" label overlay (consistent with the Rejected flag's dimming style)
+
+### Fixed
+- Flag color outlines appeared thinner around the image than around the footer. Caused by the outline (and later box-shadow) being painted behind the image's own opaque background. Fixed with an absolutely-positioned overlay that always paints above the image, giving a perfectly even border on every shot.
+
 ## [0.3] - 2026-06-17
 
 ### Added
