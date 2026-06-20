@@ -6,6 +6,26 @@
 <title>Storyboard &mdash; 100% Free Storyboard Web App</title>
 <meta name="description" content="A 100% free storyboard web app, created for the love of stories by Arno Faure.">
 
+<link rel="shortcut icon" href="icons/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="96x96" href="icons/favicon-96x96.png">
+<link rel="apple-touch-icon" sizes="57x57" href="icons/apple-icon-57x57.png">
+<link rel="apple-touch-icon" sizes="60x60" href="icons/apple-icon-60x60.png">
+<link rel="apple-touch-icon" sizes="72x72" href="icons/apple-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="76x76" href="icons/apple-icon-76x76.png">
+<link rel="apple-touch-icon" sizes="114x114" href="icons/apple-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="120x120" href="icons/apple-icon-120x120.png">
+<link rel="apple-touch-icon" sizes="144x144" href="icons/apple-icon-144x144.png">
+<link rel="apple-touch-icon" sizes="152x152" href="icons/apple-icon-152x152.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-icon-180x180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/android-icon-192x192.png">
+<link rel="manifest" href="manifest.json">
+<meta name="msapplication-TileColor" content="#0d0d0d">
+<meta name="msapplication-TileImage" content="icons/ms-icon-144x144.png">
+<meta name="msapplication-config" content="browserconfig.xml">
+<meta name="theme-color" content="#0d0d0d">
+
 <meta property="og:type" content="website">
 <meta property="og:title" content="Storyboard &mdash; 100% Free Storyboard Web App">
 <meta property="og:description" content="A 100% free storyboard web app, created for the love of stories by Arno Faure.">
@@ -316,6 +336,15 @@
   #dropzone svg { color: var(--text-dim); margin-bottom: 4px; }
   #dropzone p { font-size: 13px; color: var(--text-muted); }
   #dropzone small { font-size: 11px; color: var(--text-dim); }
+  #dropzone.compact {
+    flex-direction: row;
+    padding: 8px 16px;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  #dropzone.compact svg { width: 14px; height: 14px; margin-bottom: 0; }
+  #dropzone.compact p { font-size: 12px; }
+  #dropzone.compact small { display: none; }
   #file-input { display: none; }
 
   /* GRID */
@@ -480,8 +509,7 @@
   body.clean-view .frame-card.duplicate .frame-img,
   body.clean-view .frame-card.duplicate .placeholder-wrap { opacity: 1; }
   body.clean-view .frame-card.duplicate .frame-img-wrap::after { display: none; }
-  body.clean-view .frame-flag { display: none; }
-  body.clean-view .shot-num { display: none; }
+  body.clean-view .frame-footer { display: none; }
 
   /* IMAGE — natural ratio (or cropped to a chosen ratio) */
   .frame-img-wrap {
@@ -1215,7 +1243,7 @@
           <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
           GitHub
         </span>
-        <span class="tb-version">v0.5</span>
+        <span class="tb-version">v0.6</span>
       </a>
     </div>
   </div>
@@ -1609,6 +1637,7 @@ function render() {
   sc.textContent = imageFrames.length
     ? visibleFrames.length + ' shot' + (visibleFrames.length !== 1 ? 's' : '') + (flagFilter ? ' of ' + imageFrames.length : '')
     : '';
+  document.getElementById('dropzone').classList.toggle('compact', imageFrames.length > 0);
   grid.innerHTML = '';
 
   const labels = computeShotLabels();

@@ -2,6 +2,15 @@
 
 All notable changes to Storyboard are documented here.
 
+## [0.6] - 2026-06-20
+
+### Added
+- Favicon, Apple touch icons, Android icons, and MS tile icons, wired up via `manifest.json` and `browserconfig.xml`, organized under an `icons/` folder
+
+### Changed
+- Clean View now hides the entire shot footer bar (the "cartouche"), not just the flag and number
+- The "Drop images here" zone collapses to a slim bar once the board has shots, and expands back to full size when emptied
+
 ## [0.5] - 2026-06-19
 
 ### Added
