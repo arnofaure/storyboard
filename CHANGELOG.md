@@ -2,6 +2,11 @@
 
 All notable changes to Storyboard are documented here.
 
+## [0.7.1] - 2026-06-24
+
+### Fixed
+- Phi grid lines disappeared inconsistently on some shots when Monochrome was also active. Caused by `filter: grayscale()` on the `<img>` isolating it into its own compositing layer, breaking the grid overlay's `mix-blend-mode`. Fixed by applying the grayscale filter to the image wrapper instead, keeping both in the same compositing layer.
+
 ## [0.7] - 2026-06-21
 
 ### Added
