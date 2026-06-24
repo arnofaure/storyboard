@@ -2,6 +2,13 @@
 
 All notable changes to Storyboard are documented here.
 
+## [0.7] - 2026-06-21
+
+### Added
+- Golden-ratio (phi) composition grid overlay on each shot, toggled with the new "Grid" button or the `G` shortcut
+- Monochrome (black & white) view toggle, to check tonal/contrast dynamics, via the new "B&W" button
+- Flag filter is now a custom dropdown showing the real colored flag icon per option (In Progress/Approved/Needs Revision/Rejected), replacing the native select with colored emoji
+
 ## [0.6] - 2026-06-20
 
 ### Added

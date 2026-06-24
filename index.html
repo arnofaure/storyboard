@@ -154,7 +154,7 @@
   }
   .tb-menu-btn:hover { background: var(--tb-surface2); }
   .tb-menu-btn svg { transition: transform 0.15s; flex-shrink: 0; }
-  .tb-menu-btn.open svg { transform: rotate(180deg); }
+  .tb-menu-btn.open svg.tb-chevron { transform: rotate(180deg); }
 
   .tb-dropdown {
     display: none;
@@ -530,6 +530,25 @@
   #grid.ratio-active .frame-img {
     height: 100%;
     object-fit: cover;
+  }
+  body.monochrome .frame-img,
+  body.monochrome #player-img { filter: grayscale(1); }
+
+  /* PHI GRID — golden-ratio composition guide overlay */
+  body.show-phi-grid .frame-img-wrap::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    mix-blend-mode: difference;
+    background-image:
+      linear-gradient(to right, #fff 1px, transparent 1px),
+      linear-gradient(to right, #fff 1px, transparent 1px),
+      linear-gradient(to bottom, #fff 1px, transparent 1px),
+      linear-gradient(to bottom, #fff 1px, transparent 1px);
+    background-position: 38.2% 0, 61.8% 0, 0 38.2%, 0 61.8%;
+    background-size: 1px 100%, 1px 100%, 100% 1px, 100% 1px;
+    background-repeat: no-repeat;
   }
 
   /* PLACEHOLDER SHOT — write a description until the real image is ready */
@@ -1153,6 +1172,7 @@
   /* PRINT / PDF LAYOUT */
   @media print {
     #toolbar, #dropzone, .frame-del, .frame-dup, .frame-flag, .frame-check, .frame-info, .scene-end-drop, #toast, #save-reminder, #spinner, #page-footer, .scene-del { display: none !important; }
+    body.show-phi-grid .frame-img-wrap::before { display: none !important; }
     body { background: #fff; color: #000; }
     #main { padding: 12mm; }
     .frame-grid:empty { display: none; }
@@ -1186,7 +1206,7 @@
   <div class="tb-menu">
     <button class="tb-title tb-menu-btn" id="main-menu-btn" onclick="toggleMenu()">
       Storyboard
-      <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+      <svg class="tb-chevron" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
     </button>
     <div class="tb-dropdown" id="main-menu">
       <input type="text" id="project-name-input" class="tb-text-input" placeholder="Untitled Storyboard" maxlength="80" oninput="onProjectNameChange(this.value)" onclick="event.stopPropagation()">
@@ -1243,7 +1263,7 @@
           <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
           GitHub
         </span>
-        <span class="tb-version">v0.6</span>
+        <span class="tb-version">v0.7</span>
       </a>
     </div>
   </div>
@@ -1274,16 +1294,38 @@
       Scene
     </button>
     <div class="tb-sep"></div>
-    <div class="size-wrap">
-      <span class="size-label">Flag</span>
-      <select id="flag-filter-select" class="tb-select" onchange="updateFlagFilter(this.value)" title="Show only shots with a specific flag">
-        <option value="">All</option>
-        <option value="none">⬜ No Flag</option>
-        <option value="blue">🔵 In Progress</option>
-        <option value="green">🟢 Approved</option>
-        <option value="orange">🟠 Needs Revision</option>
-        <option value="red">🔴 Rejected</option>
-      </select>
+    <div class="tb-menu" id="flag-filter-menu">
+      <button class="tb-btn tb-menu-btn" id="flag-filter-btn" onclick="toggleFlagFilterMenu()" title="Show only shots with a specific flag">
+        <svg id="flag-filter-icon" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M4 22V4a1 1 0 011-1h13.5a.5.5 0 01.4.8L15 9l3.9 5.2a.5.5 0 01-.4.8H6a1 1 0 00-1 1v6"/></svg>
+        <span id="flag-filter-label">All</span>
+        <svg class="tb-chevron" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="tb-dropdown" id="flag-filter-dropdown">
+        <button class="tb-btn" onclick="selectFlagFilter('')">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M4 22V4a1 1 0 011-1h13.5a.5.5 0 01.4.8L15 9l3.9 5.2a.5.5 0 01-.4.8H6a1 1 0 00-1 1v6"/></svg>
+          All
+        </button>
+        <button class="tb-btn" onclick="selectFlagFilter('none')">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="opacity:0.35"><path d="M4 22V4a1 1 0 011-1h13.5a.5.5 0 01.4.8L15 9l3.9 5.2a.5.5 0 01-.4.8H6a1 1 0 00-1 1v6"/></svg>
+          No Flag
+        </button>
+        <button class="tb-btn" onclick="selectFlagFilter('blue')">
+          <svg width="13" height="13" fill="#3b82f6" stroke="#3b82f6" stroke-width="1.5" viewBox="0 0 24 24"><path d="M4 22V4a1 1 0 011-1h13.5a.5.5 0 01.4.8L15 9l3.9 5.2a.5.5 0 01-.4.8H6a1 1 0 00-1 1v6"/></svg>
+          In Progress
+        </button>
+        <button class="tb-btn" onclick="selectFlagFilter('green')">
+          <svg width="13" height="13" fill="#22c55e" stroke="#22c55e" stroke-width="1.5" viewBox="0 0 24 24"><path d="M4 22V4a1 1 0 011-1h13.5a.5.5 0 01.4.8L15 9l3.9 5.2a.5.5 0 01-.4.8H6a1 1 0 00-1 1v6"/></svg>
+          Approved
+        </button>
+        <button class="tb-btn" onclick="selectFlagFilter('orange')">
+          <svg width="13" height="13" fill="#f59e0b" stroke="#f59e0b" stroke-width="1.5" viewBox="0 0 24 24"><path d="M4 22V4a1 1 0 011-1h13.5a.5.5 0 01.4.8L15 9l3.9 5.2a.5.5 0 01-.4.8H6a1 1 0 00-1 1v6"/></svg>
+          Needs Revision
+        </button>
+        <button class="tb-btn" onclick="selectFlagFilter('red')">
+          <svg width="13" height="13" fill="#ef4444" stroke="#ef4444" stroke-width="1.5" viewBox="0 0 24 24"><path d="M4 22V4a1 1 0 011-1h13.5a.5.5 0 01.4.8L15 9l3.9 5.2a.5.5 0 01-.4.8H6a1 1 0 00-1 1v6"/></svg>
+          Rejected
+        </button>
+      </div>
     </div>
     <div class="tb-sep"></div>
     <button class="tb-btn" id="info-toggle" onclick="toggleShotInfo()" title="Show framing, angle & movement selectors on each shot">
@@ -1294,6 +1336,15 @@
       <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
       Clean View
       <span class="tb-shortcut">C</span>
+    </button>
+    <button class="tb-btn" id="grid-toggle" onclick="togglePhiGrid()" title="Show a golden-ratio (phi) composition grid on each shot (G)">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="1"/><path d="M9.3 3v18M14.7 3v18M3 9.3h18M3 14.7h18"/></svg>
+      Grid
+      <span class="tb-shortcut">G</span>
+    </button>
+    <button class="tb-btn" id="mono-toggle" onclick="toggleMonochrome()" title="View shots in black & white, to check tonal/contrast dynamics">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 000 20z" fill="currentColor" stroke="none"/></svg>
+      B&amp;W
     </button>
     <div class="tb-sep"></div>
     <button class="tb-btn" id="timeline-toggle" onclick="toggleTimeline()" title="Show/hide the shot timeline at the bottom (T · ← → to navigate)">
@@ -1504,15 +1555,40 @@ let showFileNames = false;
 let highlightDuplicates = false;
 let showShotInfo = false;
 let cleanView = false;
+let showPhiGrid = false;
+let monochrome = false;
 let flagFilter = '';
 
-function updateFlagFilter(val) {
-  flagFilter = val;
-  render();
-}
 function passesFlagFilter(fr) {
   if (!flagFilter) return true;
   return flagFilter === 'none' ? !fr.flag : fr.flag === flagFilter;
+}
+const FLAG_FILTER_META = {
+  '': { label: 'All', color: null, dim: false },
+  'none': { label: 'No Flag', color: null, dim: true },
+  'blue': { label: 'In Progress', color: '#3b82f6', dim: false },
+  'green': { label: 'Approved', color: '#22c55e', dim: false },
+  'orange': { label: 'Needs Revision', color: '#f59e0b', dim: false },
+  'red': { label: 'Rejected', color: '#ef4444', dim: false }
+};
+function toggleFlagFilterMenu() {
+  document.getElementById('flag-filter-dropdown').classList.toggle('open');
+  document.getElementById('flag-filter-btn').classList.toggle('open');
+}
+function closeFlagFilterMenu() {
+  document.getElementById('flag-filter-dropdown').classList.remove('open');
+  document.getElementById('flag-filter-btn').classList.remove('open');
+}
+function selectFlagFilter(val) {
+  flagFilter = val;
+  const meta = FLAG_FILTER_META[val];
+  document.getElementById('flag-filter-label').textContent = meta.label;
+  const icon = document.getElementById('flag-filter-icon');
+  icon.setAttribute('fill', meta.color || 'none');
+  icon.setAttribute('stroke', meta.color || 'currentColor');
+  icon.style.opacity = meta.dim ? '0.35' : '1';
+  closeFlagFilterMenu();
+  render();
 }
 const FRAMING_OPTIONS = ['', 'EWS', 'WS', 'FS', 'Cowboy', 'MS', 'MCU', 'CU', 'ECU', 'Insert'];
 const ANGLE_OPTIONS = ['', 'Eye Level', 'Low Angle', 'High Angle', "Bird's Eye", "Worm's Eye", 'POV', 'OTS', 'Profile', 'Dutch Angle'];
@@ -2136,6 +2212,7 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     closeHelp();
     closeShotTypes();
+    closeFlagFilterMenu();
     if (selectedIds.size) clearSelection();
   }
 });
@@ -2143,6 +2220,10 @@ document.addEventListener('click', e => {
   const menu = document.getElementById('main-menu');
   const btn = document.getElementById('main-menu-btn');
   if (!menu.contains(e.target) && !btn.contains(e.target)) closeMenu();
+
+  const fmenu = document.getElementById('flag-filter-dropdown');
+  const fbtn = document.getElementById('flag-filter-btn');
+  if (!fmenu.contains(e.target) && !fbtn.contains(e.target)) closeFlagFilterMenu();
 });
 
 // --- THEME & FILENAME TOGGLE ---
@@ -2169,6 +2250,16 @@ function toggleCleanView() {
   cleanView = !cleanView;
   document.body.classList.toggle('clean-view', cleanView);
   document.getElementById('clean-toggle').classList.toggle('active', cleanView);
+}
+function togglePhiGrid() {
+  showPhiGrid = !showPhiGrid;
+  document.body.classList.toggle('show-phi-grid', showPhiGrid);
+  document.getElementById('grid-toggle').classList.toggle('active', showPhiGrid);
+}
+function toggleMonochrome() {
+  monochrome = !monochrome;
+  document.body.classList.toggle('monochrome', monochrome);
+  document.getElementById('mono-toggle').classList.toggle('active', monochrome);
 }
 function buildMetaSelect(fr, field, options) {
   const sel = document.createElement('select');
@@ -2918,11 +3009,12 @@ document.addEventListener('keydown', e => {
     deleteSelected();
     return;
   }
-  if (!typing && ['c', 't', 'f'].includes(e.key.toLowerCase()) && !e.ctrlKey && !e.metaKey) {
+  if (!typing && ['c', 't', 'f', 'g'].includes(e.key.toLowerCase()) && !e.ctrlKey && !e.metaKey) {
     const key = e.key.toLowerCase();
     if (key === 'c') { toggleCleanView(); return; }
     if (key === 't') { toggleTimeline(); return; }
     if (key === 'f') { toggleFilenames(); return; }
+    if (key === 'g') { togglePhiGrid(); return; }
   }
   if (!typing && selectedIds.size && ['0','1','2','3','4'].includes(e.key)) {
     const flagMap = { '0': null, '1': 'blue', '2': 'green', '3': 'orange', '4': 'red' };
