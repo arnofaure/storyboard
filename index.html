@@ -800,6 +800,86 @@
   }
   #help-close:hover { color: var(--text); }
 
+  /* WELCOME OVERLAY — shown on first visit, then again every ~2 months as a save reminder */
+  #welcome-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+    z-index: 300;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  #welcome-overlay.show { display: flex; }
+  #welcome-modal {
+    position: relative;
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    max-width: 440px;
+    width: 100%;
+    padding: 24px;
+    color: var(--text);
+  }
+  #welcome-modal h2 {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+  #welcome-modal ul {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-left: 20px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text-muted);
+  }
+  #welcome-modal ul strong { color: var(--text); }
+  #welcome-modal .welcome-save-tip {
+    margin-top: 18px;
+    padding: 10px 12px;
+    background: rgba(239,68,68,0.12);
+    border: 0.5px solid rgba(239,68,68,0.3);
+    border-radius: var(--radius);
+    font-size: 12px;
+    color: var(--text);
+    line-height: 1.5;
+  }
+  #welcome-modal .welcome-save-tip kbd {
+    font-family: inherit;
+    font-weight: 600;
+    background: rgba(255,255,255,0.1);
+    border-radius: 3px;
+    padding: 1px 5px;
+  }
+  #welcome-got-it {
+    margin-top: 18px;
+    width: 100%;
+    background: var(--text);
+    color: var(--surface);
+    border: none;
+    border-radius: var(--radius);
+    padding: 9px 0;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  #welcome-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px;
+    line-height: 1;
+  }
+  #welcome-close:hover { color: var(--text); }
+
   /* CINEMATIC SHOT TYPES REFERENCE OVERLAY */
   #shottypes-overlay {
     display: none;
@@ -1265,7 +1345,7 @@
           <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
           GitHub
         </span>
-        <span class="tb-version">v0.7.1</span>
+        <span class="tb-version">v0.8</span>
       </a>
     </div>
   </div>
@@ -1405,6 +1485,21 @@
   <p>Storyboard isn't available on mobile or tablet yet — please use a desktop browser.</p>
 </div>
 
+<div id="welcome-overlay" onclick="if (event.target === this) dismissWelcome()">
+  <div id="welcome-modal">
+    <button id="welcome-close" onclick="dismissWelcome()" title="Close">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+    <h2>Welcome to Storyboard</h2>
+    <ul>
+      <li><strong>Everything stays on your device.</strong> Storyboard runs entirely in your browser — your images and project are never uploaded, no account needed.</li>
+      <li><strong>Resume anytime</strong> with <strong>Open</strong> in the menu, and find this guide again anytime under <strong>Menu → Help</strong>.</li>
+    </ul>
+    <p class="welcome-save-tip"><strong>Important:</strong> nothing is saved automatically. Press <kbd>Ctrl/Cmd+S</kbd> (or use <strong>Save</strong> in the menu) regularly to download your project and keep your work.</p>
+    <button id="welcome-got-it" onclick="dismissWelcome()">Got it</button>
+  </div>
+</div>
+
 <div id="help-overlay" onclick="if (event.target === this) closeHelp()">
   <div id="help-modal">
     <button id="help-close" onclick="closeHelp()" title="Close">
@@ -1417,6 +1512,7 @@
       <li><strong>Resume a project</strong> with <strong>Open</strong> and select that .json file — your shots, flags, scenes and settings come right back.</li>
       <li><strong>Timeline.</strong> Toggle the shot timeline at the bottom with the Timeline button. Use ← → to navigate between shots.</li>
       <li><strong>Player.</strong> Click the monitor icon on the left of the timeline to open the floating player. Play through your shots, adjust speed, drag to reposition, resize, or reset with the ⊿ icon.</li>
+      <li><strong>Watch the tutorials.</strong> See new features and tips in action on the <a href="https://youtube.com/playlist?list=PLD0eqWYafwsR9u1x-y5oHbD_ky-vU4rdY&si=TQTi5jJNCSLimvEH" target="_blank" rel="noopener noreferrer" style="color:rgba(255,255,255,0.7);">YouTube playlist</a>.</li>
     </ol>
     <p style="margin-top:16px;font-size:11px;color:rgba(255,255,255,0.35);line-height:1.6;">Bug, idea, or feature request? I'd love to hear from you —<br><a href="mailto:info@arnofaure.com" style="color:rgba(255,255,255,0.55);">info@arnofaure.com</a></p>
   </div>
@@ -2198,6 +2294,20 @@ function closeMenu() {
 }
 
 // --- HELP MODAL ---
+// --- WELCOME OVERLAY ---
+const WELCOME_DISMISSED_KEY = 'storyboard-welcome-dismissed-at';
+const WELCOME_INTERVAL_MS = 60 * 24 * 60 * 60 * 1000; // ~2 months
+function maybeShowWelcome() {
+  const last = parseInt(localStorage.getItem(WELCOME_DISMISSED_KEY) || '0', 10);
+  if (Date.now() - last > WELCOME_INTERVAL_MS) {
+    document.getElementById('welcome-overlay').classList.add('show');
+  }
+}
+function dismissWelcome() {
+  localStorage.setItem(WELCOME_DISMISSED_KEY, String(Date.now()));
+  document.getElementById('welcome-overlay').classList.remove('show');
+}
+
 function openHelp() {
   document.getElementById('help-overlay').classList.add('show');
 }
@@ -2215,6 +2325,7 @@ document.addEventListener('keydown', e => {
     closeHelp();
     closeShotTypes();
     closeFlagFilterMenu();
+    if (document.getElementById('welcome-overlay').classList.contains('show')) dismissWelcome();
     if (selectedIds.size) clearSelection();
   }
 });
@@ -2947,6 +3058,7 @@ function playerPause() {
 // Player drag-to-reposition
 document.addEventListener('DOMContentLoaded', () => {
   loadAutosave();
+  maybeShowWelcome();
   const header = document.getElementById('player-header');
   header.addEventListener('mousedown', e => {
     if (e.target.closest('#player-close')) return;

@@ -2,6 +2,12 @@
 
 All notable changes to Storyboard are documented here.
 
+## [0.8] - 2026-06-25
+
+### Added
+- Welcome overlay shown automatically on first visit, explaining the essentials and prominently flagging that nothing is saved automatically (Ctrl/Cmd+S reminder). Dismissing it (Got it, close, or Escape) suppresses it for ~2 months, after which it resurfaces as a periodic reminder.
+- Link to the YouTube tutorials/updates playlist in the Help overlay
+
 ## [0.7.1] - 2026-06-24
 
 ### Fixed
