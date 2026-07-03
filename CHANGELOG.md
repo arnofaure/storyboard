@@ -2,6 +2,14 @@
 
 All notable changes to Storyboard are documented here.
 
+## [0.9.5] - 2026-07-03
+
+### Added
+- The 0-4 flag shortcuts now also work by hovering a shot, with no need to select it first (selection still wins and flags the whole batch when something is selected).
+
+### Changed
+- The selection toolbar ("N selected / Duplicate / Delete / Deselect") now floats centered below the toolbar with a pink border, instead of blending into the busy button row where it was easy to miss.
+
 ## [0.9.4] - 2026-07-03
 
 ### Fixed

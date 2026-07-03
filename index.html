@@ -299,17 +299,27 @@
     cursor: pointer;
   }
 
+  /* Floats below the toolbar, centered, so it's obvious the moment a shot is selected —
+     tucked inline among the other toolbar buttons it was easy to miss. */
   #sel-bar {
     display: none;
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    transform: translateX(-50%);
+    margin-top: 10px;
     align-items: center;
     gap: 10px;
-    padding: 4px 10px;
-    background: var(--tb-surface2);
-    border-radius: var(--radius);
-    border: 0.5px solid var(--tb-border-hover);
+    padding: 6px 10px 6px 14px;
+    background: rgba(13,13,13,0.97);
+    backdrop-filter: blur(12px);
+    border-radius: var(--radius-lg, 10px);
+    border: 1.5px solid #ec4899;
+    box-shadow: 0 10px 28px rgba(236,72,153,0.35);
+    z-index: 50;
   }
   #sel-bar.visible { display: flex; }
-  #sel-bar span { color: var(--tb-text-muted); font-size: 12px; }
+  #sel-bar span { color: #ec4899; font-size: 12px; font-weight: 600; }
 
   /* MAIN */
   #main {
@@ -1378,7 +1388,7 @@
           <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
           GitHub
         </span>
-        <span class="tb-version">v0.9.4</span>
+        <span class="tb-version">v0.9.5</span>
       </a>
     </div>
   </div>
@@ -1690,6 +1700,7 @@ let frames = [];
 let dragSrc = null;
 let selectedIds = new Set();
 let lastSelectedIndex = null;
+let hoveredId = null; // shot under the pointer, so 0-4 can flag it without an explicit selection
 let showFileNames = false;
 let highlightDuplicates = false;
 let showShotInfo = false;
@@ -2054,6 +2065,10 @@ function render() {
       toggleSelect(fr.id, i, e.shiftKey);
     });
 
+    // Track hover so 0-4 can flag the shot under the pointer with no selection needed.
+    card.addEventListener('mouseenter', () => { hoveredId = fr.id; });
+    card.addEventListener('mouseleave', () => { if (hoveredId === fr.id) hoveredId = null; });
+
     // Drag events
     card.addEventListener('dragstart', onDragStart);
     card.addEventListener('dragover', onDragOver);
@@ -2117,6 +2132,13 @@ function setFlagForSelected(color) {
   if (!selectedIds.size) return;
   pushUndo();
   frames.forEach(fr => { if (!fr.isScene && selectedIds.has(fr.id)) fr.flag = color; });
+  markUnsaved();
+  render();
+}
+function setFlag(id, color) {
+  pushUndo();
+  const fr = frames.find(f => f.id === id);
+  if (fr) fr.flag = color;
   markUnsaved();
   render();
 }
@@ -3294,9 +3316,10 @@ document.addEventListener('keydown', e => {
     if (key === 'f') { toggleFilenames(); return; }
     if (key === 'g') { togglePhiGrid(); return; }
   }
-  if (!typing && selectedIds.size && ['0','1','2','3','4'].includes(e.key)) {
+  if (!typing && (selectedIds.size || hoveredId) && ['0','1','2','3','4'].includes(e.key)) {
     const flagMap = { '0': null, '1': 'blue', '2': 'green', '3': 'orange', '4': 'red' };
-    setFlagForSelected(flagMap[e.key]);
+    if (selectedIds.size) setFlagForSelected(flagMap[e.key]);
+    else setFlag(hoveredId, flagMap[e.key]);
     return;
   }
   if (showTimeline && (e.key === 'ArrowRight' || e.key === 'ArrowLeft')) {
