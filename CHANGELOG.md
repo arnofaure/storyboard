@@ -2,6 +2,11 @@
 
 All notable changes to Storyboard are documented here.
 
+## [0.9.4] - 2026-07-03
+
+### Fixed
+- The selection checkbox on each shot's corner had been invisible since 0.7: `.frame-img-wrap` gained `position: relative` for the phi-grid overlay, and with no z-index on either element the image started painting over the checkbox in DOM order. Gave the checkbox `z-index: 2` so it stays on top.
+
 ## [0.9.3] - 2026-07-03
 
 ### Fixed
