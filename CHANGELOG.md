@@ -2,6 +2,12 @@
 
 All notable changes to Storyboard are documented here.
 
+## [0.9.2] - 2026-07-03
+
+### Changed
+- New Open Graph / social preview image.
+- The flag filter menu now shows the 0-4 keyboard shortcuts (select shots, then press 1/2/3/4 to flag them In Progress/Approved/Needs Revision/Rejected, or 0 to clear).
+
 ## [0.9.1] - 2026-07-03
 
 ### Fixed
