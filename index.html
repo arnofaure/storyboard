@@ -5,25 +5,26 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Storyboard &mdash; 100% Free Storyboard Web App</title>
 <meta name="description" content="A 100% free storyboard web app, created for the love of stories by Arno Faure.">
+<script>
+(function() {
+  var ua = navigator.userAgent;
+  var isCoarse = matchMedia('(hover: none) and (pointer: coarse)').matches;
+  if (!isCoarse) return;
+  // iPadOS Safari reports as desktop Safari (Macintosh UA) but exposes multi-touch;
+  // real Macs with a mouse don't have maxTouchPoints > 1.
+  var isIPad = /iPad/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+  // Phones: iPhone/iPod UA, or Android UA carrying the "Mobile" token (tablets omit it).
+  var isPhone = /iPhone|iPod/.test(ua) || (/Android/.test(ua) && /Mobile/.test(ua));
+  document.documentElement.classList.add('is-touch');
+  if (isPhone && !isIPad) document.documentElement.classList.add('is-phone');
+})();
+</script>
 
+<link rel="icon" type="image/svg+xml" href="icons/favicon.svg">
 <link rel="shortcut icon" href="icons/favicon.ico">
-<link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="96x96" href="icons/favicon-96x96.png">
-<link rel="apple-touch-icon" sizes="57x57" href="icons/apple-icon-57x57.png">
-<link rel="apple-touch-icon" sizes="60x60" href="icons/apple-icon-60x60.png">
-<link rel="apple-touch-icon" sizes="72x72" href="icons/apple-icon-72x72.png">
-<link rel="apple-touch-icon" sizes="76x76" href="icons/apple-icon-76x76.png">
-<link rel="apple-touch-icon" sizes="114x114" href="icons/apple-icon-114x114.png">
-<link rel="apple-touch-icon" sizes="120x120" href="icons/apple-icon-120x120.png">
-<link rel="apple-touch-icon" sizes="144x144" href="icons/apple-icon-144x144.png">
-<link rel="apple-touch-icon" sizes="152x152" href="icons/apple-icon-152x152.png">
-<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-icon-180x180.png">
-<link rel="icon" type="image/png" sizes="192x192" href="icons/android-icon-192x192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
-<meta name="msapplication-TileColor" content="#0d0d0d">
-<meta name="msapplication-TileImage" content="icons/ms-icon-144x144.png">
-<meta name="msapplication-config" content="browserconfig.xml">
 <meta name="theme-color" content="#0d0d0d">
 
 <meta property="og:type" content="website">
@@ -1060,11 +1061,26 @@
     box-shadow: 0 12px 40px rgba(0,0,0,0.7);
     z-index: 95;
     overflow: hidden;
-    resize: both;
     flex-direction: column;
   }
   #player.show { display: flex; }
   body:not(.timeline-open) #player { bottom: 16px; }
+  #player-resize-handle {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    padding: 4px;
+    color: rgba(255,255,255,0.35);
+    cursor: nwse-resize;
+    touch-action: none;
+    z-index: 1;
+  }
+  #player-resize-handle:hover { color: rgba(255,255,255,0.7); }
   #player-header {
     display: flex;
     align-items: center;
@@ -1264,21 +1280,35 @@
     .shot-num { color: #888; }
   }
 
-  /* MOBILE & TABLET — not supported yet (touch drag-and-drop isn't implemented) */
+  /* PHONE — not supported (grid needs tablet-or-larger width). Tablets (iPad etc.) are
+     detected in JS via html.is-phone, since CSS media queries can't reliably tell an
+     iPad's touch+coarse pointer apart from a phone's. */
   #mobile-block { display: none; }
-  @media (max-width: 720px), (hover: none) and (pointer: coarse) {
+  @media (max-width: 480px) {
     #toolbar, #main, #page-footer { display: none !important; }
-    #mobile-block {
-      display: flex;
-      min-height: 100vh;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 40px 24px;
-      color: var(--text-muted);
-      font-size: 14px;
-      line-height: 1.6;
-    }
+    #mobile-block { display: flex; }
+  }
+  html.is-phone #toolbar, html.is-phone #main, html.is-phone #page-footer { display: none !important; }
+  html.is-phone #mobile-block { display: flex; }
+  #mobile-block {
+    min-height: 100vh;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px 24px;
+    color: var(--text-muted);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* TOUCH (tablet) — no real hover, so keep hover-only controls visible and give tap targets room */
+  html.is-touch .scene-header .scene-del,
+  html.is-touch .frame-card .frame-del,
+  html.is-touch .frame-card .frame-dup,
+  html.is-touch .frame-card .frame-flag,
+  html.is-touch .frame-card .frame-check,
+  html.is-touch .shot-meta-select {
+    opacity: 1;
   }
 </style>
 </head>
@@ -1345,7 +1375,7 @@
           <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
           GitHub
         </span>
-        <span class="tb-version">v0.8</span>
+        <span class="tb-version">v0.9</span>
       </a>
     </div>
   </div>
@@ -1482,7 +1512,7 @@
 </div>
 
 <div id="mobile-block">
-  <p>Storyboard isn't available on mobile or tablet yet — please use a desktop browser.</p>
+  <p>Storyboard isn't available on mobile phones — please use a desktop browser or an iPad.</p>
 </div>
 
 <div id="welcome-overlay" onclick="if (event.target === this) dismissWelcome()">
@@ -1629,6 +1659,9 @@
       <option value="3000">3s</option>
       <option value="5000">5s</option>
     </select>
+  </div>
+  <div id="player-resize-handle" title="Resize player">
+    <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 10 10"><path d="M9 1L1 9M9 5L5 9"/></svg>
   </div>
 </div>
 
@@ -1901,6 +1934,7 @@ function render() {
       header.addEventListener('dragleave', onDragLeave);
       header.addEventListener('drop', onDropCard);
       header.addEventListener('dragend', onDragEnd);
+      attachTouchDrag(header);
 
       grid.appendChild(header);
 
@@ -2011,6 +2045,7 @@ function render() {
     card.addEventListener('dragleave', onDragLeave);
     card.addEventListener('drop', onDropCard);
     card.addEventListener('dragend', onDragEnd);
+    attachTouchDrag(card);
 
     ensureGrid().appendChild(card);
   });
@@ -2233,21 +2268,8 @@ function moveToEndOfScene(sceneId) {
   markUnsaved();
   render();
 }
-function onDropCard(e) {
-  e.preventDefault();
-  e.stopPropagation();
-  this.classList.remove('drag-over');
-  const tid = this.dataset.id;
-  const dropEndScene = this.dataset.dropEnd;
-
-  if (e.dataTransfer.files && e.dataTransfer.files.length) {
-    if (dropEndScene) insertFilesAtSceneEnd(e.dataTransfer.files, dropEndScene);
-    else insertFilesAt(e.dataTransfer.files, tid);
-    return;
-  }
-
-  if (dropEndScene) { moveToEndOfScene(dropEndScene); return; }
-
+// Core reorder logic, shared by native (mouse) drag-and-drop and the touch pointer-drag below.
+function performReorderDrop(tid) {
   if (!tid || tid === dragSrc) return;
 
   const movingIds = getMovingIds(dragSrc);
@@ -2270,10 +2292,105 @@ function onDropCard(e) {
   markUnsaved();
   render();
 }
+function onDropCard(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  this.classList.remove('drag-over');
+  const tid = this.dataset.id;
+  const dropEndScene = this.dataset.dropEnd;
+
+  if (e.dataTransfer.files && e.dataTransfer.files.length) {
+    if (dropEndScene) insertFilesAtSceneEnd(e.dataTransfer.files, dropEndScene);
+    else insertFilesAt(e.dataTransfer.files, tid);
+    return;
+  }
+
+  if (dropEndScene) { moveToEndOfScene(dropEndScene); return; }
+
+  performReorderDrop(tid);
+}
 function onDragEnd() {
   document.querySelectorAll('.frame-card, .scene-header, .scene-end-drop').forEach(c => c.classList.remove('dragging', 'drag-over'));
   dragSrc = null;
 }
+
+// --- TOUCH DRAG REORDER ---
+// Native HTML5 DnD above (draggable/dragstart/dragover/drop) stays as-is for mouse.
+// iPadOS Safari doesn't fire dragstart from a finger, so touch/pen gets its own long-press-to-drag
+// gesture built on Pointer Events, reusing the same dragSrc/performReorderDrop/moveToEndOfScene logic.
+let touchDrag = null; // { timer, startX, startY, pointerId, active, lastTarget }
+const TOUCH_DRAG_HOLD_MS = 350;
+const TOUCH_DRAG_MOVE_TOLERANCE = 10;
+
+function attachTouchDrag(el) {
+  el.addEventListener('pointerdown', onTouchDragStart);
+}
+
+function onTouchDragStart(e) {
+  if (e.pointerType === 'mouse') return;
+  if (e.target.closest('input, textarea, select, button')) return;
+  const el = this;
+  touchDrag = {
+    timer: setTimeout(() => startTouchDrag(el, e.pointerId), TOUCH_DRAG_HOLD_MS),
+    startX: e.clientX,
+    startY: e.clientY,
+    pointerId: e.pointerId,
+    active: false,
+    lastTarget: null,
+  };
+}
+
+function startTouchDrag(el, pointerId) {
+  if (!touchDrag) return;
+  touchDrag.active = true;
+  dragSrc = el.dataset.id;
+  const ids = getMovingIds(dragSrc);
+  document.querySelectorAll('.frame-card, .scene-header').forEach(c => {
+    if (ids.has(c.dataset.id)) c.classList.add('dragging');
+  });
+  if (el.setPointerCapture) { try { el.setPointerCapture(pointerId); } catch (err) {} }
+  if (navigator.vibrate) navigator.vibrate(8);
+}
+
+document.addEventListener('pointermove', e => {
+  if (!touchDrag) return;
+  if (!touchDrag.active) {
+    if (Math.hypot(e.clientX - touchDrag.startX, e.clientY - touchDrag.startY) > TOUCH_DRAG_MOVE_TOLERANCE) {
+      clearTimeout(touchDrag.timer);
+      touchDrag = null;
+    }
+    return;
+  }
+  e.preventDefault();
+  const under = document.elementFromPoint(e.clientX, e.clientY);
+  const target = under && under.closest('.frame-card, .scene-header, .scene-end-drop, .frame-grid');
+  if (touchDrag.lastTarget && touchDrag.lastTarget !== target) touchDrag.lastTarget.classList.remove('drag-over');
+  if (target && target.dataset.id !== dragSrc) target.classList.add('drag-over');
+  touchDrag.lastTarget = target;
+}, { passive: false });
+
+document.addEventListener('pointerup', () => {
+  if (!touchDrag) return;
+  clearTimeout(touchDrag.timer);
+  if (touchDrag.active) {
+    const target = touchDrag.lastTarget;
+    if (target) {
+      if (target.dataset.dropEnd) moveToEndOfScene(target.dataset.dropEnd);
+      else performReorderDrop(target.dataset.id);
+    }
+    document.querySelectorAll('.frame-card, .scene-header, .scene-end-drop').forEach(c => c.classList.remove('dragging', 'drag-over'));
+    dragSrc = null;
+  }
+  touchDrag = null;
+});
+
+document.addEventListener('pointercancel', () => {
+  if (!touchDrag) return;
+  clearTimeout(touchDrag.timer);
+  document.querySelectorAll('.frame-card, .scene-header, .scene-end-drop').forEach(c => c.classList.remove('dragging', 'drag-over'));
+  dragSrc = null;
+  touchDrag = null;
+});
 
 // --- TOAST ---
 function toast(msg, duration = 2800) {
@@ -3055,29 +3172,61 @@ function playerPause() {
   if (pauseIcon) pauseIcon.style.display = 'none';
 }
 
-// Player drag-to-reposition
+// Player drag-to-reposition (Pointer Events cover mouse, touch and pen alike)
 document.addEventListener('DOMContentLoaded', () => {
   loadAutosave();
   maybeShowWelcome();
   const header = document.getElementById('player-header');
-  header.addEventListener('mousedown', e => {
+  header.addEventListener('pointerdown', e => {
     if (e.target.closest('#player-close')) return;
     const panel = document.getElementById('player');
     const rect = panel.getBoundingClientRect();
-    playerDrag = { ox: e.clientX - rect.left, oy: e.clientY - rect.top };
+    playerDrag = { ox: e.clientX - rect.left, oy: e.clientY - rect.top, pointerId: e.pointerId };
     panel.style.transition = 'none';
+    if (header.setPointerCapture) { try { header.setPointerCapture(e.pointerId); } catch (err) {} }
     e.preventDefault();
   });
 });
-document.addEventListener('mousemove', e => {
-  if (!playerDrag) return;
+document.addEventListener('pointermove', e => {
+  if (!playerDrag || e.pointerId !== playerDrag.pointerId) return;
   const panel = document.getElementById('player');
   panel.style.left = (e.clientX - playerDrag.ox) + 'px';
   panel.style.top = (e.clientY - playerDrag.oy) + 'px';
   panel.style.right = 'auto';
   panel.style.bottom = 'auto';
 });
-document.addEventListener('mouseup', () => { playerDrag = null; });
+document.addEventListener('pointerup', () => { playerDrag = null; });
+document.addEventListener('pointercancel', () => { playerDrag = null; });
+
+// Player resize (custom handle — CSS `resize` isn't supported on iPadOS Safari)
+let playerResize = null;
+document.addEventListener('DOMContentLoaded', () => {
+  const handle = document.getElementById('player-resize-handle');
+  handle.addEventListener('pointerdown', e => {
+    const panel = document.getElementById('player');
+    const rect = panel.getBoundingClientRect();
+    playerResize = { startX: e.clientX, startY: e.clientY, startW: rect.width, startH: rect.height, pointerId: e.pointerId };
+    panel.style.left = rect.left + 'px';
+    panel.style.top = rect.top + 'px';
+    panel.style.right = 'auto';
+    panel.style.bottom = 'auto';
+    panel.style.transition = 'none';
+    if (handle.setPointerCapture) { try { handle.setPointerCapture(e.pointerId); } catch (err) {} }
+    e.preventDefault();
+    e.stopPropagation();
+  });
+});
+document.addEventListener('pointermove', e => {
+  if (!playerResize || e.pointerId !== playerResize.pointerId) return;
+  const panel = document.getElementById('player');
+  const w = Math.max(200, playerResize.startW + (e.clientX - playerResize.startX));
+  const h = Math.max(180, playerResize.startH + (e.clientY - playerResize.startY));
+  panel.style.width = w + 'px';
+  panel.style.height = h + 'px';
+  applyPlayerRatio();
+});
+document.addEventListener('pointerup', () => { playerResize = null; });
+document.addEventListener('pointercancel', () => { playerResize = null; });
 
 // --- SAVE REMINDER & SHORTCUT ---
 function showSaveReminder() {
