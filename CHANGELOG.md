@@ -2,6 +2,11 @@
 
 All notable changes to Storyboard are documented here.
 
+## [0.9.6] - 2026-07-03
+
+### Added
+- Link to the Blocking app (blocking.arnofaure.com) next to the GitHub link in the menu footer.
+
 ## [0.9.5] - 2026-07-03
 
 ### Added
