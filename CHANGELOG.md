@@ -2,6 +2,21 @@
 
 All notable changes to Storyboard are documented here.
 
+## [0.9.1] - 2026-07-03
+
+### Fixed
+- Frame/scene reordering by drag didn't work on iPad. The long-press drag gesture (added in 0.9) never got the chance to start because `.frame-card` and `.scene-header` had no `touch-action: none`, so Safari's native scroll gesture claimed the touch and fired `pointercancel` before the hold timer elapsed. Fixed by disabling default touch panning on those elements.
+
+## [0.9] - 2026-07-03
+
+### Added
+- iPad support: full app instead of the "unsupported" screen, detected via UA/touch-points.
+- Pointer Events long-press drag gesture for reordering frames and scenes on touch, alongside the existing mouse-based HTML5 drag-and-drop.
+- Floating player's drag-to-reposition and resize handle ported to Pointer Events for touch support.
+
+### Changed
+- New minimal favicon set.
+
 ## [0.8] - 2026-06-25
 
 ### Added
