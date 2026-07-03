@@ -2,6 +2,11 @@
 
 All notable changes to Storyboard are documented here.
 
+## [0.9.3] - 2026-07-03
+
+### Fixed
+- The 0-4 flag shortcuts appeared to do nothing: they only act on selected shots, and the only way to select one was a checkbox that's hidden until hover and easy to miss. Clicking anywhere on a shot's card (image, footer) now selects it too, so the shortcuts work right after a click.
+
 ## [0.9.2] - 2026-07-03
 
 ### Changed
