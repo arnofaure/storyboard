@@ -157,6 +157,38 @@
   .tb-menu-btn svg { transition: transform 0.15s; flex-shrink: 0; }
   .tb-menu-btn.open svg.tb-chevron { transform: rotate(180deg); }
 
+  /* LOGO MENU BUTTON — app mark doubles as the menu trigger */
+  .tb-logo-btn {
+    height: 40px;
+    padding: 0 8px 0 0;
+    gap: 4px;
+  }
+  .tb-logo-btn.open { background: var(--tb-surface2); }
+  .tb-logo-square {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .tb-logo {
+    height: 30px;
+    width: auto;
+    color: var(--tb-text);
+    display: block;
+  }
+  .tb-logo-btn .tb-chevron { color: var(--tb-text-dim); }
+
+  .tb-menu-heading {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--tb-text);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 4px 8px;
+  }
+
   .tb-dropdown {
     display: none;
     flex-direction: column;
@@ -234,6 +266,7 @@
     font-size: 12px;
     padding: 5px 12px;
     cursor: pointer;
+    text-decoration: none;
     transition: border-color 0.15s, color 0.15s, background 0.15s;
     white-space: nowrap;
     display: flex;
@@ -1337,11 +1370,22 @@
 
 <div id="toolbar">
   <div class="tb-menu">
-    <button class="tb-title tb-menu-btn" id="main-menu-btn" onclick="toggleMenu()">
-      Storyboard
+    <button class="tb-logo-btn tb-menu-btn" id="main-menu-btn" onclick="toggleMenu()" title="Menu" aria-label="Menu">
+      <span class="tb-logo-square">
+        <svg class="tb-logo" viewBox="0 0 144 263" xmlns="http://www.w3.org/2000/svg">
+          <g transform="matrix(1,0,0,1,-1947.191749,-2025.796858)">
+            <g transform="matrix(0.355122,0,0,0.329408,1336.353603,1440.900366)">
+              <g transform="matrix(8.96689,0,0,9.666856,-6806.729886,-1690.322089)">
+                <path d="M992.777,381.448C990.516,380.083 988.105,379.07 985.545,378.408C982.985,377.747 979.913,377.288 976.329,377.032C976.031,376.99 975.743,376.958 975.465,376.936C975.188,376.915 974.921,376.904 974.665,376.904C973.769,376.904 973.321,377.267 973.321,377.992C973.321,378.419 973.567,378.707 974.057,378.856C974.548,379.006 975.22,379.123 976.073,379.208C977.737,379.422 979.487,379.667 981.321,379.944C983.156,380.222 984.948,380.638 986.697,381.192C988.447,381.747 990.036,382.558 991.465,383.624C992.895,384.691 994.025,386.099 994.857,387.848C995.689,389.598 996.105,391.795 996.105,394.44C996.105,397.384 995.423,430.871 994.057,432.855C992.692,434.839 990.847,436.417 988.521,437.591C986.196,438.764 983.551,439.607 980.585,440.119C977.62,440.631 974.559,440.887 971.401,440.887C967.732,440.929 964.095,440.727 960.489,440.279C956.884,439.831 953.695,439.265 950.921,438.583L952.713,385.032C953.695,385.758 954.868,386.536 956.233,387.368C957.599,388.2 959.455,388.958 961.801,389.64C964.148,390.323 967.241,390.856 971.081,391.24C971.295,391.283 971.497,391.304 971.689,391.304L972.233,391.304C972.703,391.304 973.055,391.24 973.289,391.112C973.524,390.984 973.641,390.707 973.641,390.28C973.641,389.811 973.439,389.512 973.033,389.384C972.628,389.256 971.999,389.128 971.145,389C968.841,388.744 966.548,388.382 964.265,387.912C961.983,387.443 959.903,386.718 958.025,385.736C956.148,384.755 954.644,383.39 953.513,381.64C952.383,379.891 951.817,377.608 951.817,374.792C951.817,370.782 952.767,367.592 954.665,365.224C956.564,362.856 959.135,361.15 962.377,360.104C965.62,359.059 969.247,358.536 973.257,358.536C976.628,358.536 980.148,358.846 983.817,359.464C987.487,360.083 991.113,360.926 994.697,361.992L992.777,381.448Z" fill="currentColor"/>
+              </g>
+            </g>
+          </g>
+        </svg>
+      </span>
       <svg class="tb-chevron" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
     </button>
     <div class="tb-dropdown" id="main-menu">
+      <div class="tb-menu-heading">Storyboard</div>
       <input type="text" id="project-name-input" class="tb-text-input" placeholder="Untitled Storyboard" maxlength="80" oninput="onProjectNameChange(this.value)" onclick="event.stopPropagation()">
       <button class="tb-btn" onclick="document.getElementById('project-input').click(); closeMenu()" title="Open a saved project">
         <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg>
@@ -1390,6 +1434,10 @@
         <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
         Cinematic Shot Types
       </button>
+      <a class="tb-btn" href="https://blocking.arnofaure.com/" target="_blank" rel="noopener noreferrer" title="Open the Blocking app" onclick="closeMenu()">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><path d="M15 3h6v6"/><path d="M10 14L21 3"/></svg>
+        Blocking App
+      </a>
       <div class="tb-sep-h"></div>
       <div class="tb-menu-footer">
         <span class="tb-menu-footer-left">
@@ -1397,12 +1445,8 @@
             <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
             GitHub
           </a>
-          <a class="tb-footer-link" href="https://blocking.arnofaure.com/" target="_blank" rel="noopener noreferrer" title="Open the Blocking app">
-            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><path d="M15 3h6v6"/><path d="M10 14L21 3"/></svg>
-            Blocking
-          </a>
         </span>
-        <span class="tb-version">v0.9.6</span>
+        <span class="tb-version">v0.9.7</span>
       </div>
     </div>
   </div>

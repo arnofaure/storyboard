@@ -2,6 +2,12 @@
 
 All notable changes to Storyboard are documented here.
 
+## [0.9.7] - 2026-07-03
+
+### Changed
+- The menu button is now the app logo (mark in a 40x40 square) with a chevron next to it, instead of the "Storyboard" text label. The menu itself now opens with a "STORYBOARD" heading at the top.
+- The Blocking app link moved from a small footer link (next to GitHub) to a full menu item ("Blocking App", below Cinematic Shot Types) for better visibility.
+
 ## [0.9.6] - 2026-07-03
 
 ### Added
