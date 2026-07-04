@@ -367,6 +367,35 @@
     padding: 20px;
   }
 
+  /* EXAMPLE BANNER — shown on first visit while the seeded example storyboard is present */
+  #example-banner {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 16px;
+    margin-bottom: 14px;
+    background: rgba(236,72,153,0.12);
+    border: 1px solid rgba(236,72,153,0.35);
+    border-radius: var(--radius-lg);
+    color: var(--text);
+    font-size: 13px;
+  }
+  #example-banner.show { display: flex; }
+  #example-banner button {
+    background: #ec4899;
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s;
+  }
+  #example-banner button:hover { background: #db2777; }
+
   /* DROPZONE */
   #dropzone {
     border: 1px dashed var(--border);
@@ -1446,7 +1475,7 @@
             GitHub
           </a>
         </span>
-        <span class="tb-version">v0.9.7</span>
+        <span class="tb-version">v0.9.8</span>
       </div>
     </div>
   </div>
@@ -1573,6 +1602,10 @@
 </div>
 
 <div id="main">
+  <div id="example-banner">
+    <span>This is an example storyboard to help you get started.</span>
+    <button onclick="removeExample()">Remove Example</button>
+  </div>
   <div id="dropzone"
     onclick="document.getElementById('file-input').click()"
     ondrop="handleDrop(event)"
@@ -2826,6 +2859,37 @@ async function loadAutosave() {
   }
 }
 
+// --- EXAMPLE STORYBOARD (first visit only, until removed) ---
+const EXAMPLE_DISMISSED_KEY = 'storyboard-example-dismissed';
+async function maybeLoadExample() {
+  if (frames.length || localStorage.getItem(EXAMPLE_DISMISSED_KEY)) return;
+  try {
+    const res = await fetch('storyboard-example.json');
+    if (!res.ok) return;
+    const project = await res.json();
+    frames = framesFromSaved(project.frames, f => f.dataURL);
+    projectName = project.name || '';
+    document.getElementById('project-name-input').value = projectName;
+    applyProjectSettings(project.settings || {});
+    unsaved = false;
+    document.getElementById('example-banner').classList.add('show');
+    render();
+  } catch (err) {
+    console.error('Failed to load example storyboard', err);
+  }
+}
+function removeExample() {
+  frames = [];
+  selectedIds.clear();
+  lastSelectedIndex = null;
+  projectName = '';
+  document.getElementById('project-name-input').value = '';
+  localStorage.setItem(EXAMPLE_DISMISSED_KEY, '1');
+  document.getElementById('example-banner').classList.remove('show');
+  render();
+  toast('Example removed.');
+}
+
 // --- EXPORT IMAGES ---
 async function exportImages() {
   const imageFrames = frames.filter(f => !f.isScene && !f.isPlaceholder);
@@ -3268,8 +3332,9 @@ function playerPause() {
 }
 
 // Player drag-to-reposition (Pointer Events cover mouse, touch and pen alike)
-document.addEventListener('DOMContentLoaded', () => {
-  loadAutosave();
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadAutosave();
+  await maybeLoadExample();
   maybeShowWelcome();
   const header = document.getElementById('player-header');
   header.addEventListener('pointerdown', e => {

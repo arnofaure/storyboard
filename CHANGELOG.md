@@ -2,6 +2,11 @@
 
 All notable changes to Storyboard are documented here.
 
+## [0.9.8] - 2026-07-04
+
+### Added
+- First-time visitors with an empty board now get a seeded example storyboard, with a dismissible banner explaining it's an example and a "Remove Example" button to clear it. Once removed (or once the user starts editing and it autosaves), it won't come back.
+
 ## [0.9.7] - 2026-07-03
 
 ### Changed
