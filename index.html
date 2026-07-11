@@ -179,6 +179,10 @@
     display: block;
   }
   .tb-logo-btn .tb-chevron { color: var(--tb-text-dim); }
+  .tb-beta {
+    font-size: 9px; font-weight: 700; letter-spacing: .03em; color: rgba(255,255,255,0.55);
+    padding: 1px 4px; border: 0.5px solid rgba(255,255,255,0.25); border-radius: 4px; flex-shrink: 0;
+  }
 
   .tb-menu-heading {
     font-size: 13px;
@@ -196,7 +200,7 @@
     position: absolute;
     top: calc(100% + 8px);
     left: 0;
-    min-width: 190px;
+    min-width: 220px;
     background: #1a1a1a;
     border: 0.5px solid var(--tb-border-hover);
     border-radius: var(--radius);
@@ -1411,6 +1415,7 @@
           </g>
         </svg>
       </span>
+      <span class="tb-beta">BETA</span>
       <svg class="tb-chevron" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
     </button>
     <div class="tb-dropdown" id="main-menu">
@@ -1474,6 +1479,7 @@
           </g>
         </svg>
         Blocking App
+        <span class="tb-beta">BETA</span>
       </a>
       <a class="tb-btn" href="https://moodboard.arnofaure.com/" target="_blank" rel="noopener noreferrer" title="Open the Moodboard app" onclick="closeMenu()">
         <svg width="13" height="13" viewBox="0 0 362 661" xmlns="http://www.w3.org/2000/svg">
@@ -1486,6 +1492,7 @@
           </g>
         </svg>
         Moodboard App
+        <span class="tb-beta">BETA</span>
       </a>
       <a class="tb-btn" href="https://time.arnofaure.com/" target="_blank" rel="noopener noreferrer" title="Open the Time Tracker app" onclick="closeMenu()">
         <svg width="13" height="13" viewBox="0 0 362 661" xmlns="http://www.w3.org/2000/svg">
@@ -1498,6 +1505,7 @@
           </g>
         </svg>
         Time Tracker
+        <span class="tb-beta">BETA</span>
       </a>
       <div class="tb-sep-h"></div>
       <div class="tb-menu-footer">
